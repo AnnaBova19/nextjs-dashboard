@@ -16,7 +16,7 @@ export async function fetchRevenue() {
     // Artificially delay a response for demo purposes.
     // Don't do this in production :)
 
-    console.log('Delay is added for testing purposes. Remove it in production!');
+    // Delay is added for testing purposes. Remove it in production!
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const data = await sql<Revenue[]>`SELECT * FROM revenue`;
@@ -30,7 +30,7 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    console.log('Delay is added for testing purposes. Remove it in production!');
+    // Delay is added for testing purposes. Remove it in production!
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const data = await sql<LatestInvoiceRaw[]>`
