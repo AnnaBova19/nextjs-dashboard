@@ -7,6 +7,15 @@ import { redirect } from 'next/navigation';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
+export type State = {
+  errors?: {
+    customerId?: string[];
+    amount?: string[];
+    status?: string[];
+  };
+  message?: string | null;
+};
+
 const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({
@@ -20,15 +29,6 @@ const FormSchema = z.object({
   }),
   date: z.string(),
 });
-
-export type State = {
-  errors?: {
-    customerId?: string[];
-    amount?: string[];
-    status?: string[];
-  };
-  message?: string | null;
-};
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
