@@ -1,5 +1,5 @@
-import Form from '@/app/ui/invoices/create-form';
-import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+import CreateInvoiceForm from '@/app/ui/invoices/create-invoice';
+import Breadcrumbs from '@/app/ui/shared/breadcrumbs';
 import { fetchCustomers } from '@/app/lib/data';
 import { Metadata } from 'next';
  
@@ -22,7 +22,7 @@ export default async function Page() {
           },
         ]}
       />
-      <Form customers={customers} />
+      <CreateInvoiceForm customers={customers} />
     </main>
   );
 }

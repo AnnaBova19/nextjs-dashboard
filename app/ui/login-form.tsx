@@ -7,9 +7,9 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { Button } from './button';
+import { Button } from './shared/button';
 import { useActionState } from 'react';
-import { authenticate, State } from '../lib/auth-actions';
+import { authenticate, State } from '../lib/actions/auth-actions';
 import { useSearchParams } from 'next/navigation';
 
 export default function LoginForm() {

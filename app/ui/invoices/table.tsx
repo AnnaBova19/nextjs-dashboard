@@ -29,10 +29,11 @@ export default async function InvoicesTable({
                     <div className="mb-2 flex items-center">
                       <Image
                         src={invoice.image_url}
-                        className="mr-2 rounded-full"
+                        alt={`${invoice.name}'s profile picture`}
                         width={28}
                         height={28}
-                        alt={`${invoice.name}'s profile picture`}
+                        className="mr-2 rounded-full object-cover"
+                        style={{ width: '28px', height: '28px' }}
                       />
                       <p>{invoice.name}</p>
                     </div>
@@ -88,10 +89,11 @@ export default async function InvoicesTable({
                     <div className="flex items-center gap-3">
                       <Image
                         src={invoice.image_url}
-                        className="rounded-full"
+                        alt={`${invoice.name}'s profile picture`}
                         width={28}
                         height={28}
-                        alt={`${invoice.name}'s profile picture`}
+                        className="rounded-full object-cover"
+                        style={{ width: '28px', height: '28px' }}
                       />
                       <p>{invoice.name}</p>
                     </div>
