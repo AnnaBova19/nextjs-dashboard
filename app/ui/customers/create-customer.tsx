@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "../shared/button";
 import { AtSymbolIcon, UserCircleIcon } from "@heroicons/react/24/outline";
-import ImageUploader from "./image-uploader";
+import ImageUploader from "@/app/ui/customers/image-uploader";
 import { Label } from "@/app/ui/shared/label";
 
 export default function CreateCustomerForm() {
@@ -17,7 +17,7 @@ export default function CreateCustomerForm() {
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Customer image */}
         <div className="mb-4">
-          <ImageUploader state={state} />
+          <ImageUploader state={state} onRemove={() => {}} />
         </div>
 
         {/* Customer first name */}

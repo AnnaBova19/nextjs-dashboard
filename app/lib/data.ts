@@ -35,7 +35,7 @@ export async function fetchLatestInvoices() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const data = await sql<LatestInvoiceRaw[]>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
+      SELECT invoices.amount, customers.first_name, customers.last_name, customers.image_url, customers.email, invoices.id
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       ORDER BY invoices.date DESC
@@ -43,6 +43,7 @@ export async function fetchLatestInvoices() {
 
     const latestInvoices = data.map((invoice) => ({
       ...invoice,
+      name: `${invoice.first_name} ${invoice.last_name}`,
       amount: formatCurrency(invoice.amount),
     }));
     return latestInvoices;
@@ -98,13 +99,15 @@ export async function fetchFilteredInvoices(query: string, currentPage: number) 
         invoices.amount,
         invoices.date,
         invoices.status,
-        customers.name,
+        customers.first_name,
+        customers.last_name,
         customers.email,
         customers.image_url
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.name ILIKE ${`%${query}%`} OR
+        customers.first_name ILIKE ${`%${query}%`} OR
+        customers.last_name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
         invoices.date::text ILIKE ${`%${query}%`} OR
@@ -126,7 +129,8 @@ export async function fetchInvoicesPages(query: string) {
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.name ILIKE ${`%${query}%`} OR
+        customers.first_name ILIKE ${`%${query}%`} OR
+        customers.last_name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
         invoices.date::text ILIKE ${`%${query}%`} OR
@@ -171,9 +175,10 @@ export async function fetchCustomers() {
     const customers = await sql<CustomerField[]>`
       SELECT
         id,
-        name
+        first_name,
+        last_name
       FROM customers
-      ORDER BY name ASC
+      ORDER BY first_name ASC
     `;
 
     return customers;
@@ -191,7 +196,8 @@ export async function fetchFilteredCustomers(query: string, currentPage: number)
     const data = await sql<CustomersTableType[]>`
       SELECT
         customers.id,
-        customers.name,
+        customers.first_name,
+        customers.last_name,
         customers.email,
         customers.image_url,
         COUNT(invoices.id) AS total_invoices,
@@ -200,10 +206,11 @@ export async function fetchFilteredCustomers(query: string, currentPage: number)
       FROM customers
       LEFT JOIN invoices ON customers.id = invoices.customer_id
       WHERE
-        customers.name ILIKE ${`%${query}%`} OR
+        customers.first_name ILIKE ${`%${query}%`} OR
+        customers.last_name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`}
-      GROUP BY customers.id, customers.name, customers.email, customers.image_url
-      ORDER BY customers.name ASC
+      GROUP BY customers.id, customers.first_name, customers.last_name, customers.email, customers.image_url
+      ORDER BY customers.first_name ASC
       LIMIT ${CUSTOMERS_ITEMS_PER_PAGE} OFFSET ${offset}
 	  `;
 
@@ -225,7 +232,8 @@ export async function fetchCustomersPages(query: string) {
     const data = await sql`SELECT COUNT(*)
       FROM customers
       WHERE
-        customers.name ILIKE ${`%${query}%`} OR
+        customers.first_name ILIKE ${`%${query}%`} OR
+        customers.last_name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`}
     `;
 
@@ -242,7 +250,8 @@ export async function fetchCustomerById(id: string) {
     const data = await sql<CustomerForm[]>`
       SELECT
         customers.id,
-        customers.name,
+        customers.first_name,
+        customers.last_name,
         customers.email,
         customers.image_url
       FROM customers

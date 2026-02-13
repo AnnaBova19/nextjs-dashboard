@@ -19,17 +19,17 @@ export type State = {
   message?: string | null;
 };
 
-const MAX_FILE_SIZE = 4000000; // 4MB
+const MAX_FILE_SIZE = 1000000; // 1MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-const FormSchema = z.object({
+const CreateCustomerFormSchema = z.object({
   id: z.string(),
   imageFile: z
-    .any()
-    .refine((file) => file instanceof File && file.size > 0, "Image is required.") // Check if a file is present and not empty
-    .refine((file) => file instanceof File && file.size <= MAX_FILE_SIZE, "Max image size is 4MB.")
+    .instanceof(File)
+    .refine((file) => file.size > 0, "Image is required.") // Check if a file is present and not empty
+    .refine((file) => file.size <= MAX_FILE_SIZE, "Max image size is 1MB.")
     .refine(
-      (file) => file instanceof File && ACCEPTED_IMAGE_TYPES.includes(file.type),
+      (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
       "Only .jpg, .jpeg, .png, and .webp formats are supported."
     ),
   firstName: z.string().min(1, { message: "First name is required" }).trim(),
@@ -37,7 +37,7 @@ const FormSchema = z.object({
   email: z.string().email(),
 });
 
-const CreateCustomer = FormSchema.omit({ id: true });
+const CreateCustomer = CreateCustomerFormSchema.omit({ id: true });
 
 export async function createCustomer(prevState: State, formData: FormData) {
   // Validate form using Zod
@@ -56,13 +56,14 @@ export async function createCustomer(prevState: State, formData: FormData) {
     };
   }
 
+  const { firstName, lastName, email } = validatedFields.data;
+  let imageUrl: string | null;
+
   // Upload image to S3 and get the URL
-  const file = validatedFields.data.imageFile as File;
-  let uploadResult: { success?: boolean; url?: string; error?: string };
-  let imageUrl: string | undefined;
   try {
-    uploadResult = await uploadImageToS3(file);
-    imageUrl = uploadResult.url;
+    const file = validatedFields.data.imageFile as File;
+    const uploadResult = await uploadImageToS3(file);
+    imageUrl = uploadResult.url || null;
     if (!uploadResult.success || !imageUrl) {
       return { message: uploadResult.error || 'Failed to upload image. Please try again.' };
     }
@@ -71,19 +72,127 @@ export async function createCustomer(prevState: State, formData: FormData) {
     return { message: 'Failed to upload image. Please try again.' };
   }
 
-  // Prepare data for insertion into the database
-  const { firstName, lastName, email } = validatedFields.data;
-  const name = `${firstName} ${lastName}`;
-
+  // upload data to database
   try {
     await sql`
-      INSERT INTO customers (name, email, image_url)
-      VALUES (${name}, ${email}, ${imageUrl})
+      INSERT INTO customers (first_name, last_name, email, image_url)
+      VALUES (${firstName}, ${lastName}, ${email}, ${imageUrl})
     `;
   } catch (error) {
     console.error('Database Error:', error);
     // throw new Error('Failed to create customer.');
     return { message: 'Database Error: Failed to Create Customer.' };
+  }
+
+  revalidatePath('/dashboard/customers');
+  redirect('/dashboard/customers');
+}
+
+const UpdateCustomerFormSchema = z.object({
+  id: z.string(),
+  imageFile: z.instanceof(File).optional(),
+  firstName: z.string().min(1, { message: "First name is required" }).trim(),
+  lastName: z.string().min(1, { message: "Last name is required" }).trim(),
+  email: z.string().email(),
+  oldImageUrl: z.string().optional(), // Add oldImageUrl to the schema
+  isOldImageRemoved: z.boolean(),
+});
+
+const UpdateCustomer = UpdateCustomerFormSchema.omit({ id: true })
+  .superRefine((data, ctx) => {
+    if (data.isOldImageRemoved && !(data.imageFile instanceof File && data.imageFile.size > 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['imageFile'],
+        message: "Image is required.",
+      });
+    }
+  })
+  .superRefine((data, ctx) => {
+    if (data.isOldImageRemoved && data.imageFile instanceof File && data.imageFile.size > MAX_FILE_SIZE) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['imageFile'],
+        message: "Max image size is 1MB.",
+      });
+    }
+  })
+  .superRefine((data, ctx) => {
+    if (data.isOldImageRemoved &&data.imageFile instanceof File && !ACCEPTED_IMAGE_TYPES.includes(data.imageFile.type)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['imageFile'],
+        message: "Only .jpg, .jpeg, .png, and .webp formats are supported.",
+      });
+    }
+  });
+
+export async function updateCustomer(id: string, isOldImageRemoved: boolean, prevState: State, formData: FormData) {
+  // Validate form using Zod
+  const validatedFields = UpdateCustomer.safeParse({
+    imageFile: formData.get('imageFile'),
+    firstName: formData.get('firstName'),
+    lastName: formData.get('lastName'),
+    email: formData.get('email'),
+    isOldImageRemoved,
+  });
+ 
+  // If form validation fails, return errors early. Otherwise, continue.
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Customer.',
+    };
+  }
+
+  const { imageFile, firstName, lastName, email } = validatedFields.data;
+  const oldImageUrl = formData.get('oldImageUrl') as string | null;
+  let imageUrl = oldImageUrl || null;
+
+  // upload new image to S3 and get the new URL
+  const hasNewImage = imageFile instanceof File && imageFile.size > 0;
+  if (hasNewImage) {
+    try {
+      const uploadResult = await uploadImageToS3(imageFile);
+      imageUrl = uploadResult.url || null;
+      if (!uploadResult.success || !imageUrl) {
+        return { message: uploadResult.error || 'Failed to upload new image. Please try again.' };
+      }
+      // remove old image from S3 after successful new upload
+      if (isOldImageRemoved && oldImageUrl) {
+        console.log(777)
+        const oldImageKey = oldImageUrl?.split('/').pop() || '';
+        console.log(999, oldImageKey)
+        if (oldImageKey) {
+          try {
+            await deleteImageFromS3(oldImageKey);
+          } catch (err) {
+            console.error("Failed to delete old image:", err);
+            return {
+              message: "Failed to delete old image. Please try again.",
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to upload new image:", err);
+      return {
+        message: "Failed to upload new image. Please try again.",
+      };
+    }
+  }
+
+  // upload data to database
+  try {
+    await sql`
+      UPDATE customers
+      SET first_name = ${firstName}, last_name = ${lastName}, email = ${email}, image_url = ${imageUrl}
+      WHERE id = ${id}
+    `;
+  } catch (error) {
+    console.error('Database Error:', error);
+    // throw new Error('Failed to update customer.');
+    return { message: 'Database Error: Failed to Update Customer.' };
   }
 
   revalidatePath('/dashboard/customers');

@@ -4,8 +4,16 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { TrashIcon } from '@heroicons/react/24/outline';
 
-export default function ImageUploader({ state }: { state: any }) {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
+export default function ImageUploader({
+  state,
+  imageUrl,
+  onRemove,
+}: {
+  state: any;
+  imageUrl?: string | null;
+  onRemove: () => void;
+}) {
+  const [imageSrc, setImageSrc] = useState<string | null>(imageUrl || null);
 
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -25,6 +33,7 @@ export default function ImageUploader({ state }: { state: any }) {
     event.preventDefault();
     event.stopPropagation();
     setImageSrc(null);
+    if (imageUrl) { onRemove(); }
   };
 
   return (
@@ -34,6 +43,7 @@ export default function ImageUploader({ state }: { state: any }) {
       </label>
       <div className="relative mt-2 rounded-md">
         <div className="relative">
+          <input type="hidden" name="oldImageUrl" value={imageUrl || ''} />
           <input
             id="imageFile"
             name="imageFile"
@@ -50,6 +60,7 @@ export default function ImageUploader({ state }: { state: any }) {
                   src={imageSrc}
                   alt="Image preview"
                   fill
+                  sizes="28px"
                   className="rounded-lg object-cover"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-30 rounded-lg"></div>

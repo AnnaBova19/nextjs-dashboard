@@ -33,13 +33,13 @@ export default async function CustomersTable({
                         <div className="flex items-center gap-3">
                           <Image
                             src={customer.image_url}
-                            alt={`${customer.name}'s profile picture`}
+                            alt={`${customer.first_name} ${customer.last_name}'s profile picture`}
                             width={28}
                             height={28}
                             className="rounded-full object-cover"
                             style={{ width: '28px', height: '28px' }}
                           />
-                          <p>{customer.name}</p>
+                          <p>{customer.first_name} {customer.last_name}</p>
                         </div>
                       </div>
                       <p className="text-sm text-gray-500">
@@ -98,13 +98,13 @@ export default async function CustomersTable({
                       <div className="flex items-center gap-3">
                         <Image
                           src={customer.image_url}
-                          alt={`${customer.name}'s profile picture`}
+                          alt={`${customer.first_name} ${customer.last_name}'s profile picture`}
                           width={28}
                           height={28}
                           className="rounded-full object-cover"
                           style={{ width: '28px', height: '28px' }}
                         />
-                        <p>{customer.name}</p>
+                        <p>{customer.first_name} {customer.last_name}</p>
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-3 py-3 text-sm">
