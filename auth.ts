@@ -1,10 +1,13 @@
 import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
 import { z } from 'zod';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import postgres from 'postgres';
+import PostgresAdapter from '@auth/pg-adapter';
+import { Pool } from '@neondatabase/serverless';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
  
@@ -18,25 +21,35 @@ async function getUser(email: string): Promise<User | undefined> {
   }
 }
  
-export const { auth, signIn, signOut } = NextAuth({
-  ...authConfig,
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
-          .safeParse(credentials);
- 
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-          const user = await getUser(email);
-          if (!user) return null;
-          const passwordsMatch = await bcrypt.compare(password, user.password);
-          if (passwordsMatch) return user;
-        }
- 
-        return null;
-      },
-    }),
-  ],
+export const { handlers, auth, signIn, signOut } = NextAuth(() => {
+  // Create a database pool instance, using your connection string from environment variables
+  const pool = new Pool({ connectionString: process.env.POSTGRES_URL });
+
+  return {
+    ...authConfig,
+    adapter: PostgresAdapter(pool),
+    providers: [
+      Google,
+      Credentials({
+        async authorize(credentials) {
+          const parsedCredentials = z
+            .object({ email: z.string().email(), password: z.string().min(6) })
+            .safeParse(credentials);
+  
+          if (parsedCredentials.success) {
+            const { email, password } = parsedCredentials.data;
+            const user = await getUser(email);
+            if (!user) return null;
+            const passwordsMatch = await bcrypt.compare(password, user.password);
+            if (passwordsMatch) return user;
+          }
+  
+          return null;
+        },
+      }),
+    ],
+    session: {
+      strategy: "jwt",
+    },
+  };
 });

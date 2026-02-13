@@ -37,7 +37,7 @@ export default async function CustomersTable({
                             width={28}
                             height={28}
                             className="rounded-full object-cover"
-                            style={{ width: '28px', height: '28px' }}
+                            style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
                           />
                           <p>{customer.first_name} {customer.last_name}</p>
                         </div>
@@ -102,7 +102,7 @@ export default async function CustomersTable({
                           width={28}
                           height={28}
                           className="rounded-full object-cover"
-                          style={{ width: '28px', height: '28px' }}
+                          style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
                         />
                         <p>{customer.first_name} {customer.last_name}</p>
                       </div>

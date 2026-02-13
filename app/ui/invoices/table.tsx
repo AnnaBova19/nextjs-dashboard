@@ -33,7 +33,7 @@ export default async function InvoicesTable({
                         width={28}
                         height={28}
                         className="mr-2 rounded-full object-cover"
-                        style={{ width: '28px', height: '28px' }}
+                        style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
                       />
                       <p>{invoice.first_name} {invoice.last_name}</p>
                     </div>
@@ -93,7 +93,7 @@ export default async function InvoicesTable({
                         width={28}
                         height={28}
                         className="rounded-full object-cover"
-                        style={{ width: '28px', height: '28px' }}
+                        style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
                       />
                       <p>{invoice.first_name} {invoice.last_name}</p>
                     </div>
