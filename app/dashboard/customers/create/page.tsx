@@ -1,6 +1,14 @@
 import CreateCustomerForm from '@/app/ui/customers/create-customer';
-import Breadcrumbs from '@/app/ui/shared/breadcrumbs';
 import { Metadata } from 'next';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import Link from 'next/link';
  
 export const metadata: Metadata = {
   title: 'Create Customer',
@@ -9,16 +17,21 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <main>
-      <Breadcrumbs
-        breadcrumbs={[
-          { label: 'Customers', href: '/dashboard/customers' },
-          {
-            label: 'Create Customer',
-            href: '/dashboard/customers/create',
-            active: true,
-          },
-        ]}
-      />
+      <Breadcrumb className="mb-6">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard/customers">Customers</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>
+              Create Customer
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <CreateCustomerForm />
     </main>
   );

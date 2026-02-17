@@ -2,6 +2,7 @@ import { inter } from '@/app/ui/fonts';
 import '@/app/ui/global.css';
 import '@/app/ui/variables.module.scss';
 import { Metadata } from 'next';
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: {
@@ -19,7 +20,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>{children}</body>
+      <body className={`${inter.className} antialiased`}>
+        <main>{children}</main>
+        <Toaster position="top-center" />
+      </body>
     </html>
   );
 }

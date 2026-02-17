@@ -9,7 +9,7 @@ import {
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { Button } from './shared/button';
+import { Button } from "@/components/ui/button";
 import { useActionState, useState } from "react";
 import { signUp, State } from "../lib/actions/register";
 import { useSearchParams } from 'next/navigation';

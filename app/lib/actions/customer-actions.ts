@@ -10,6 +10,7 @@ import { CustomerForm } from '../definitions';
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export type State = {
+  success: boolean;
   errors?: {
     imageFile?: string[];
     firstName?: string[];
@@ -51,6 +52,7 @@ export async function createCustomer(prevState: State, formData: FormData) {
   // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     return {
+      success: false,
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Create Customer.',
     };
@@ -65,11 +67,11 @@ export async function createCustomer(prevState: State, formData: FormData) {
     const uploadResult = await uploadImageToS3(file);
     imageUrl = uploadResult.url || null;
     if (!uploadResult.success || !imageUrl) {
-      return { message: uploadResult.error || 'Failed to upload image. Please try again.' };
+      return { success: false, message: uploadResult.error || 'Failed to upload image. Please try again.' };
     }
   } catch (error) {
     console.error('S3 Upload Error:', error);
-    return { message: 'Failed to upload image. Please try again.' };
+    return { success: false, message: 'Failed to upload image. Please try again.' };
   }
 
   // upload data to database
@@ -80,12 +82,11 @@ export async function createCustomer(prevState: State, formData: FormData) {
     `;
   } catch (error) {
     console.error('Database Error:', error);
-    // throw new Error('Failed to create customer.');
-    return { message: 'Database Error: Failed to Create Customer.' };
+    return { success: false, message: 'Database Error: Failed to Create Customer.' };
   }
 
   revalidatePath('/dashboard/customers');
-  redirect('/dashboard/customers');
+  return { success: true, errors: {}, message: 'Customer created successfully!' };
 }
 
 const UpdateCustomerFormSchema = z.object({
@@ -140,6 +141,7 @@ export async function updateCustomer(id: string, isOldImageRemoved: boolean, pre
   // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     return {
+      success: false,
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Update Customer.',
     };
@@ -156,19 +158,18 @@ export async function updateCustomer(id: string, isOldImageRemoved: boolean, pre
       const uploadResult = await uploadImageToS3(imageFile);
       imageUrl = uploadResult.url || null;
       if (!uploadResult.success || !imageUrl) {
-        return { message: uploadResult.error || 'Failed to upload new image. Please try again.' };
+        return { success: false, message: uploadResult.error || 'Failed to upload new image. Please try again.' };
       }
       // remove old image from S3 after successful new upload
       if (isOldImageRemoved && oldImageUrl) {
-        console.log(777)
         const oldImageKey = oldImageUrl?.split('/').pop() || '';
-        console.log(999, oldImageKey)
         if (oldImageKey) {
           try {
             await deleteImageFromS3(oldImageKey);
           } catch (err) {
             console.error("Failed to delete old image:", err);
             return {
+              success: false,
               message: "Failed to delete old image. Please try again.",
             };
           }
@@ -177,6 +178,7 @@ export async function updateCustomer(id: string, isOldImageRemoved: boolean, pre
     } catch (err) {
       console.error("Failed to upload new image:", err);
       return {
+        success: false,
         message: "Failed to upload new image. Please try again.",
       };
     }
@@ -191,12 +193,11 @@ export async function updateCustomer(id: string, isOldImageRemoved: boolean, pre
     `;
   } catch (error) {
     console.error('Database Error:', error);
-    // throw new Error('Failed to update customer.');
-    return { message: 'Database Error: Failed to Update Customer.' };
+    return { success: false, message: 'Database Error: Failed to Update Customer.' };
   }
 
   revalidatePath('/dashboard/customers');
-  redirect('/dashboard/customers');
+  return { success: true, errors: {}, message: 'Customer updated successfully!' };
 }
 
 export async function deleteCustomer(customer: CustomerForm) {
