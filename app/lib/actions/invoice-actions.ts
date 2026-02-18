@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export type State = {
+  success: boolean;
   errors?: {
     customerId?: string[];
     amount?: string[];
@@ -43,6 +44,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
   // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     return {
+      success: false,
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Create Invoice.',
     };
@@ -60,12 +62,11 @@ export async function createInvoice(prevState: State, formData: FormData) {
     `;
   } catch (error) {
     console.error('Database Error:', error);
-    // throw new Error('Failed to create invoice.');
-    return { message: 'Database Error: Failed to Create Invoice.' };
+    return { success: false, message: 'Database Error: Failed to Create Invoice.' };
   }
 
   revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
+  return { success: true, errors: {}, message: 'Invoice created successfully!' };
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
@@ -81,6 +82,7 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
   // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     return {
+      success: false,
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Update Invoice.',
     };
@@ -98,12 +100,11 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
     `;
   } catch (error) {
     console.error('Database Error:', error);
-    // throw new Error('Failed to update invoice.');
-    return { message: 'Database Error: Failed to Update Invoice.' };
+    return { success: false, message: 'Database Error: Failed to Update Invoice.' };
   }
 
   revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
+  return { success: true, errors: {}, message: 'Invoice updated successfully!' };
 }
 
 export async function deleteInvoice(id: string) {

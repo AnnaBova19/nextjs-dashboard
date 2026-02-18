@@ -1,5 +1,5 @@
 import { signIn } from '@/auth';
-import { Button } from './shared/button';
+import { Button } from "@/components/ui/button";
  
 export default function GoogleSignIn() {
   return (

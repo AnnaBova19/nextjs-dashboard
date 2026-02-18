@@ -8,14 +8,26 @@ import {
   CurrencyDollarIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '@/app/ui/shared/button';
+import { Button } from "@/components/ui/button";
 import { createInvoice, State } from '@/app/lib/actions/invoice-actions';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { Label } from '@/app/ui/shared/label';
+import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
 
 export default function CreateInvoiceForm({ customers }: { customers: CustomerField[] }) {
-  const initialState: State = { message: null, errors: {} };
+  const router = useRouter();
+  const initialState: State = { success: false, errors: {}, message: null };
   const [state, formAction, isPending] = useActionState(createInvoice, initialState);
+
+  useEffect(() => {
+    if (state.success && state.message) {
+      toast.success(state.message);
+      setTimeout(() => {
+        router.push('/dashboard/invoices');
+      }, 100);
+    }
+  }, [state, router]);
 
   return (
     <form action={formAction}>
@@ -139,7 +151,7 @@ export default function CreateInvoiceForm({ customers }: { customers: CustomerFi
         </fieldset>
 
         <div aria-live="polite" aria-atomic="true">
-          {state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
+          {!state.success && state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
         </div>
       </div>
       <div className="mt-6 flex justify-end gap-4">
