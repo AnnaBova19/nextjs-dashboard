@@ -2,27 +2,15 @@
 
 import { createCustomer, State } from "@/app/lib/actions/customer-actions";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
+import { Button } from "../shared/button";
 import { AtSymbolIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import ImageUploader from "@/app/ui/customers/image-uploader";
 import { Label } from "@/app/ui/shared/label";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export default function CreateCustomerForm() {
-  const router = useRouter();
-  const initialState: State = { success: false, errors: {}, message: null };
+  const initialState: State = { message: null, errors: {} };
   const [state, formAction, isPending] = useActionState(createCustomer, initialState);
-
-  useEffect(() => {
-    if (state.success && state.message) {
-      toast.success(state.message);
-      setTimeout(() => {
-        router.push('/dashboard/customers');
-      }, 100);
-    }
-  }, [state, router]);
 
   return (
     <form action={formAction}>
@@ -118,7 +106,7 @@ export default function CreateCustomerForm() {
         </div>
 
         <div aria-live="polite" aria-atomic="true">
-          {!state.success && state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
+          {state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
         </div>
       </div>
       <div className="mt-6 flex justify-end gap-4">

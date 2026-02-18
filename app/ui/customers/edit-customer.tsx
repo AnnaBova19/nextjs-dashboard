@@ -3,35 +3,23 @@
 import { State, updateCustomer } from "@/app/lib/actions/customer-actions";
 import { CustomerForm } from "@/app/lib/definitions";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useActionState, useState } from "react";
+import { Button } from "@/app/ui/shared/button";
 import ImageUploader from "@/app/ui/customers/image-uploader";
 import { Label } from "@/app/ui/shared/label";
 import { AtSymbolIcon, UserCircleIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export default function EditCustomerForm({
   customer
 }: {
   customer: CustomerForm;
 }) {
-  const router = useRouter();
   const [isOldImageRemoved, setIsOldImageRemoved] = useState(false);
-  const initialState: State = { success: false, errors: {}, message: null };
+  const initialState: State = { message: null, errors: {} };
   const updateCustomerWithId = updateCustomer.bind(null, customer.id, isOldImageRemoved);
   const [state, formAction, isPending] = useActionState(updateCustomerWithId, initialState);
 
   const onRemove = () => { setIsOldImageRemoved(true) }
-
-  useEffect(() => {
-    if (state.success && state.message) {
-      toast.success(state.message);
-      setTimeout(() => {
-        router.push('/dashboard/customers');
-      }, 100);
-    }
-  }, [state, router]);
 
   return (
     <form action={formAction}>
@@ -130,7 +118,7 @@ export default function EditCustomerForm({
         </div>
 
         <div aria-live="polite" aria-atomic="true">
-          {!state.success && state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
+          {state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
         </div>
       </div>
       <div className="mt-6 flex justify-end gap-4">

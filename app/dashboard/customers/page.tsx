@@ -1,12 +1,12 @@
 import { fetchCustomersPages } from '@/app/lib/data';
 import { CreateCustomer } from '@/app/ui/customers/buttons';
 import Table from '@/app/ui/customers/table';
+import Pagination from '@/app/ui/shared/pagination';
 import { lusitana } from '@/app/ui/fonts';
 import Search from '@/app/ui/shared/search';
 import { CustomersTableSkeleton } from '@/app/ui/shared/skeletons';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import DynamicPagination from '@/app/ui/shared/pagination';
  
 export const metadata: Metadata = {
   title: 'Customers',
@@ -36,7 +36,7 @@ export default async function Page(props: {
         <Table query={query} currentPage={currentPage} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
-        <DynamicPagination totalPages={totalPages} />
+        <Pagination totalPages={totalPages} />
       </div>
     </div>
   );
