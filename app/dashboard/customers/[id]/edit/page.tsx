@@ -1,7 +1,7 @@
 import { fetchCustomerById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import EditCustomerForm from '@/app/ui/customers/edit-customer';
+import EditCustomerForm from '@/app/dashboard/customers/_components/edit-customer';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
+
   const customer = await fetchCustomerById(id)
   if (!customer) {
     notFound();

@@ -1,4 +1,4 @@
-import CreateCustomerForm from '@/app/ui/customers/create-customer';
+import CreateCustomerForm from '@/app/dashboard/customers/_components/create-customer';
 import { Metadata } from 'next';
 import {
   Breadcrumb,

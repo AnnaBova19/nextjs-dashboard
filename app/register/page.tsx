@@ -1,9 +1,9 @@
-import AcmeLogo from '@/app/ui/acme-logo';
+import AcmeLogo from '@/app/ui/shared/acme-logo';
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { lusitana } from '@/app/ui/fonts';
 import Link from 'next/link';
-import RegisterForm from '@/app/ui/register-form';
+import RegisterForm from '@/app/ui/auth/register-form';
 
 export const metadata: Metadata = {
   title: 'Register',

@@ -5,7 +5,7 @@ import { CustomerForm } from "@/app/lib/definitions";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import ImageUploader from "@/app/ui/customers/image-uploader";
+import ImageUploader from "@/app/dashboard/customers/_components/image-uploader";
 import { Label } from "@/app/ui/shared/label";
 import { AtSymbolIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";

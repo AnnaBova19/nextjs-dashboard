@@ -1,6 +1,5 @@
 import Image from 'next/image';
-import { fetchFilteredCustomers } from '@/app/lib/data';
-import { DeleteCustomer, UpdateCustomer } from '@/app/ui/customers/buttons';
+import { DeleteCustomer, UpdateCustomer } from '@/app/dashboard/customers/_components/buttons';
 import {
   Table,
   TableBody,
@@ -9,16 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { FormattedCustomersTable } from '@/app/lib/definitions';
 
-export default async function CustomersTable({
-  query,
-  currentPage,
-}: {
-  query: string;
-  currentPage: number;
-}) {
-  // It is a Server Component that fetches its own data, so you can pass the searchParams prop from the page to the component.
-  const customers = await fetchFilteredCustomers(query, currentPage);
+export default async function CustomersTable({ customers }: { customers: Array<FormattedCustomersTable>}) {
 
   return (
     <div className="mt-6 flow-root">

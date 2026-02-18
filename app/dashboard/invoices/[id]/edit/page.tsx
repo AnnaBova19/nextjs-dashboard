@@ -1,4 +1,4 @@
-import EditInvoiceForm from '@/app/ui/invoices/edit-invoice';
+import EditInvoiceForm from '@/app/dashboard/invoices/_components/edit-invoice';
 import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
@@ -23,6 +23,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     fetchInvoiceById(id),
     fetchCustomers(),
   ]);
+
   if (!invoice) {
     notFound();
   }

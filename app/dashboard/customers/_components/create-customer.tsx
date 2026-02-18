@@ -4,7 +4,7 @@ import { createCustomer, State } from "@/app/lib/actions/customer-actions";
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
 import { AtSymbolIcon, UserCircleIcon } from "@heroicons/react/24/outline";
-import ImageUploader from "@/app/ui/customers/image-uploader";
+import ImageUploader from "@/app/dashboard/customers/_components/image-uploader";
 import { Label } from "@/app/ui/shared/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";

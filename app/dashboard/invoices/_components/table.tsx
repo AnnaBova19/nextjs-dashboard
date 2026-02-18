@@ -1,8 +1,8 @@
 import Image from 'next/image';
-import { UpdateInvoice, DeleteInvoice } from '@/app/ui/invoices/buttons';
-import InvoiceStatus from '@/app/ui/invoices/status';
+import { UpdateInvoice, DeleteInvoice } from '@/app/dashboard/invoices/_components/buttons';
+import InvoiceStatus from '@/app/dashboard/invoices/_components/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
-import { fetchFilteredInvoices } from '@/app/lib/data';
+import { InvoicesTableType } from '@/app/lib/definitions';
 import {
   Table,
   TableBody,
@@ -12,15 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default async function InvoicesTable({
-  query,
-  currentPage,
-}: {
-  query: string;
-  currentPage: number;
-}) {
-  // It is a Server Component that fetches its own data, so you can pass the searchParams prop from the page to the component.
-  const invoices = await fetchFilteredInvoices(query, currentPage);
+export default async function InvoicesTable({ invoices }: { invoices: Array<InvoicesTableType> }) {
 
   return (
     <div className="mt-6 flow-root">

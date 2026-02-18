@@ -1,4 +1,4 @@
-import CreateInvoiceForm from '@/app/ui/invoices/create-invoice';
+import CreateInvoiceForm from '@/app/dashboard/invoices/_components/create-invoice';
 import { fetchCustomers } from '@/app/lib/data';
 import { Metadata } from 'next';
 import {

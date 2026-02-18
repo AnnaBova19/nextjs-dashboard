@@ -1,6 +1,6 @@
-import AcmeLogo from '@/app/ui/acme-logo';
-import LoginForm from '@/app/ui/login-form';
-import GoogleSignIn from '@/app/ui/google-sign-in';
+import AcmeLogo from '@/app/ui/shared/acme-logo';
+import LoginForm from '@/app/ui/auth/login-form';
+import GoogleSignIn from '@/app/ui/auth/google-sign-in';
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { lusitana } from '@/app/ui/fonts';

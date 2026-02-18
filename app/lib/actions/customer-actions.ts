@@ -3,7 +3,6 @@
 import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { deleteImageFromS3, uploadImageToS3 } from './s3-actions';
 import { CustomerForm } from '../definitions';
 

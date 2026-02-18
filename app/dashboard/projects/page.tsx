@@ -1,15 +1,15 @@
 import { lusitana } from '@/app/ui/fonts';
-import { TableSkeleton } from '@/app/ui/shared/skeletons';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import CustomersSection from '@/app/dashboard/customers/_components/customers-section';
+import { TableSkeleton } from '@/app/ui/shared/skeletons';
+import ProjectsSection from './_components/projects-section';
  
 export const metadata: Metadata = {
-  title: 'Customers',
+  title: 'Projects',
 };
-
+ 
 export default async function Page(props: {
-  searchParams?: Promise<{
+    searchParams?: Promise<{
     query?: string;
     page?: string;
   }>;
@@ -17,15 +17,15 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
-  
+
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl`}>Customers</h1>
+        <h1 className={`${lusitana.className} text-2xl`}>Projects</h1>
       </div>
       <Suspense key={query + currentPage} fallback={<TableSkeleton />}>
-        <CustomersSection query={query} currentPage={currentPage} />
+        <ProjectsSection query={query} currentPage={currentPage} />
       </Suspense>
     </div>
   );
-}
+};
