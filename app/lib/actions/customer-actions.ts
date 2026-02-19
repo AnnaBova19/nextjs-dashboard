@@ -4,7 +4,7 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { deleteImageFromS3, uploadImageToS3 } from './s3-actions';
-import { CustomerForm } from '../definitions';
+import { CustomerForm } from '@/app/dashboard/customers/_lib/types';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
