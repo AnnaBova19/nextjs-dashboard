@@ -31,7 +31,6 @@ const FormSchema = z.object({
 });
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
-
 export async function createInvoice(prevState: State, formData: FormData) {
   // Validate form using Zod
   const validatedFields = CreateInvoice.safeParse({
@@ -69,7 +68,6 @@ export async function createInvoice(prevState: State, formData: FormData) {
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
-
 export async function updateInvoice(id: string, prevState: State, formData: FormData) {
   // Validate form using Zod
   const validatedFields = UpdateInvoice.safeParse({

@@ -65,7 +65,7 @@ export default async function CustomersTable({ customers }: { customers: Array<F
               ))}
             </div>
             {/* desktop version */}
-            <Table>
+            <Table className="hidden min-w-full text-gray-900 md:table">
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>

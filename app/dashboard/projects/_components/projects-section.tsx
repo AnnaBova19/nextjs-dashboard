@@ -1,7 +1,10 @@
-import { fetchFilteredProjects, fetchProjetcsPages } from "@/app/lib/data";
-import { EmptyState } from "@/app/ui/shared/empty-state";
-import Search from "@/app/ui/shared/search";
-import { FolderIcon } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import ProjectsSectionTabContent from "./projects-section-tab-content";
 
 export default async function ProjectsSection({
   query,
@@ -10,25 +13,20 @@ export default async function ProjectsSection({
   query: string
   currentPage: number
 }) {
-  const [projects, totalPages] = await Promise.all([
-    fetchFilteredProjects(query, currentPage),
-    fetchProjetcsPages(query),
-  ]);
-
-  if (!projects || !projects.length) {
-    return <EmptyState
-      title="No projects found"
-      description="Looks like you haven't added any projects yet."
-      icon={<FolderIcon />}
-      ctaText="Create Project"
-    />;
-  }
-
   return (
-    <>
-      <div className="mt-4 flex items-center justify-between gap-2 md:mt-6">
-        <Search placeholder="Search projects..." />
-      </div>
-    </>
-  )
+    <div className="mt-6 flow-root">
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList>
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="archived">Archived</TabsTrigger>
+        </TabsList>
+        <TabsContent value="active">
+          <ProjectsSectionTabContent query={query} currentPage={currentPage} status="active" />
+        </TabsContent>
+        <TabsContent value="archived">
+          <ProjectsSectionTabContent query={query} currentPage={currentPage} status="archived" />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }

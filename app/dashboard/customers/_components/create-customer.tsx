@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 export default function CreateCustomerForm() {
   const router = useRouter();
+  
   const initialState: State = { success: false, errors: {}, message: null };
   const [state, formAction, isPending] = useActionState(createCustomer, initialState);
 
@@ -128,7 +129,7 @@ export default function CreateCustomerForm() {
         >
           Cancel
         </Link>
-        <Button type="submit" aria-disabled={isPending}>Create Customer</Button>
+        <Button type="submit" disabled={isPending}>Create Customer</Button>
       </div>
     </form>
   );

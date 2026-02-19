@@ -46,6 +46,15 @@ export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
   amount: number;
 };
 
+export type Project = {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'archived';
+  created_at: number;
+  archived_at?: number;
+};
+
 export type InvoicesTableType = {
   id: string;
   customer_id: string;
@@ -67,14 +76,6 @@ export type CustomersTableType = {
   total_invoices: number;
   total_pending: number;
   total_paid: number;
-};
-
-export type ProjectsTable = {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'inactive' | 'archived';
-  created_at: string;
 };
 
 export type FormattedCustomersTable = {

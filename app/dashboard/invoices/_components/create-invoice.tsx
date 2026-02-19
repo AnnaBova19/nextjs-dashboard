@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 
 export default function CreateInvoiceForm({ customers }: { customers: CustomerField[] }) {
   const router = useRouter();
+  
   const initialState: State = { success: false, errors: {}, message: null };
   const [state, formAction, isPending] = useActionState(createInvoice, initialState);
 
@@ -161,7 +162,7 @@ export default function CreateInvoiceForm({ customers }: { customers: CustomerFi
         >
           Cancel
         </Link>
-        <Button type="submit" aria-disabled={isPending}>Create Invoice</Button>
+        <Button type="submit" disabled={isPending}>Create Invoice</Button>
       </div>
     </form>
   );

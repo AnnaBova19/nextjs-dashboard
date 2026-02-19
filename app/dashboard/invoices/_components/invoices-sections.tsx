@@ -1,10 +1,8 @@
 import { fetchFilteredInvoices, fetchInvoicesPages } from "@/app/lib/data"
 import { EmptyState } from "@/app/ui/shared/empty-state";
 import { DocumentDuplicateIcon } from "@heroicons/react/24/outline"
-import Search from "@/app/ui/shared/search";
 import DynamicPagination from "@/app/ui/shared/pagination";
 import InvoicesTable from "@/app/dashboard/invoices/_components/table";
-import { CreateInvoice } from "@/app/dashboard/invoices/_components/buttons";
 
 export default async function InvoicesSection({
   query,
@@ -32,10 +30,6 @@ export default async function InvoicesSection({
 
   return (
     <>
-      <div className="mt-4 flex items-center justify-between gap-2 md:mt-6">
-        <Search placeholder="Search invoices..." />
-        <CreateInvoice />
-      </div>
       <InvoicesTable invoices={invoices} />
       <div className="mt-5 flex w-full justify-center">
         <DynamicPagination totalPages={totalPages} />

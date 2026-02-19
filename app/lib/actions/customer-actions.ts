@@ -38,7 +38,6 @@ const CreateCustomerFormSchema = z.object({
 });
 
 const CreateCustomer = CreateCustomerFormSchema.omit({ id: true });
-
 export async function createCustomer(prevState: State, formData: FormData) {
   // Validate form using Zod
   const validatedFields = CreateCustomer.safeParse({
@@ -97,7 +96,6 @@ const UpdateCustomerFormSchema = z.object({
   oldImageUrl: z.string().optional(), // Add oldImageUrl to the schema
   isOldImageRemoved: z.boolean(),
 });
-
 const UpdateCustomer = UpdateCustomerFormSchema.omit({ id: true })
   .superRefine((data, ctx) => {
     if (data.isOldImageRemoved && !(data.imageFile instanceof File && data.imageFile.size > 0)) {

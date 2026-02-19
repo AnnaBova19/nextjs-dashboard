@@ -3,6 +3,8 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { TableSkeleton } from '@/app/ui/shared/skeletons';
 import ProjectsSection from './_components/projects-section';
+import Search from '@/app/ui/shared/search';
+import { CreateProjectButton } from './_components/create-project-button';
  
 export const metadata: Metadata = {
   title: 'Projects',
@@ -22,6 +24,10 @@ export default async function Page(props: {
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
         <h1 className={`${lusitana.className} text-2xl`}>Projects</h1>
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-2 md:mt-6">
+        <Search placeholder="Search projects..." />
+        <CreateProjectButton />
       </div>
       <Suspense key={query + currentPage} fallback={<TableSkeleton />}>
         <ProjectsSection query={query} currentPage={currentPage} />

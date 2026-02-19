@@ -6,7 +6,6 @@ import {
   InvoiceForm,
   InvoicesTableType,
   LatestInvoiceRaw,
-  ProjectsTable,
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
@@ -265,46 +264,5 @@ export async function fetchCustomerById(id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch customer.');
-  }
-}
-
-// PROJECTS
-const PROJECTS_ITEMS_PER_PAGE = 6;
-export async function fetchFilteredProjects(query: string, currentPage: number) {
-  const offset = (currentPage - 1) * PROJECTS_ITEMS_PER_PAGE;
-
-  try {
-    const projects = await sql<ProjectsTable[]>`
-      SELECT * FROM projects
-      WHERE
-        projects.name ILIKE ${`%${query}%`} OR
-        projects.description ILIKE ${`%${query}%`} OR
-        projects.status ILIKE ${`%${query}%`}
-      ORDER BY projects.created_at DESC
-      LIMIT ${PROJECTS_ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
-
-    return projects;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch projects.');
-  }
-}
-
-export async function fetchProjetcsPages(query: string) {
-  try {
-    const data = await sql`SELECT COUNT(*)
-      FROM projects
-      WHERE
-        projects.name ILIKE ${`%${query}%`} OR
-        projects.description ILIKE ${`%${query}%`} OR
-        projects.status ILIKE ${`%${query}%`}
-    `;
-
-    const totalPages = Math.ceil(Number(data[0].count) / PROJECTS_ITEMS_PER_PAGE);
-    return totalPages;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of projects.');
   }
 }

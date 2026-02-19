@@ -18,6 +18,7 @@ export default function EditCustomerForm({
 }) {
   const router = useRouter();
   const [isOldImageRemoved, setIsOldImageRemoved] = useState(false);
+  
   const initialState: State = { success: false, errors: {}, message: null };
   const updateCustomerWithId = updateCustomer.bind(null, customer.id, isOldImageRemoved);
   const [state, formAction, isPending] = useActionState(updateCustomerWithId, initialState);
@@ -140,7 +141,7 @@ export default function EditCustomerForm({
         >
           Cancel
         </Link>
-        <Button type="submit" aria-disabled={isPending}>Edit Customer</Button>
+        <Button type="submit" disabled={isPending}>Edit Customer</Button>
       </div> 
     </form>
   );
