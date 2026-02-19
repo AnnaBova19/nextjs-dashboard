@@ -2,21 +2,25 @@ import { lusitana } from '@/app/ui/fonts';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { TableSkeleton } from '@/app/ui/shared/skeletons';
-import ProjectsSection from './_components/projects-section';
 import Search from '@/app/ui/shared/search';
-import { CreateProjectButton } from './_components/create-project-button';
+import { CreateProjectButton } from '@/app/dashboard/projects/_components/create-project-button';
+import ProjectsTabs from '@/app/dashboard/projects/_components/projects-tabs';
+import ProjectsSectionTabContent from '@/app/dashboard/projects/_components/projects-section-tab-content';
+import { ProjectStatus } from './_lib/enums';
  
 export const metadata: Metadata = {
   title: 'Projects',
 };
  
 export default async function Page(props: {
-    searchParams?: Promise<{
+  searchParams?: Promise<{
+    status?: ProjectStatus;
     query?: string;
     page?: string;
   }>;
 }) {
   const searchParams = await props.searchParams;
+  const status = searchParams?.status || ProjectStatus.ACTIVE;
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
 
@@ -30,7 +34,11 @@ export default async function Page(props: {
         <CreateProjectButton />
       </div>
       <Suspense key={query + currentPage} fallback={<TableSkeleton />}>
-        <ProjectsSection query={query} currentPage={currentPage} />
+        <div className="mt-6 flow-root">
+          <ProjectsTabs>
+            <ProjectsSectionTabContent query={query} currentPage={currentPage} status={status} /> 
+          </ProjectsTabs>
+        </div>
       </Suspense>
     </div>
   );

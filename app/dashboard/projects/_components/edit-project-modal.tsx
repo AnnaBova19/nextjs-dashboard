@@ -1,7 +1,7 @@
 'use client';
 
-import { createProject, State, updateProject } from "@/app/lib/actions/project-actions";
-import { Project } from "@/app/lib/definitions";
+import { State, updateProject } from "@/app/lib/actions/project-actions";
+import { Project } from "@/app/dashboard/projects/_lib/types";
 import { Label } from "@/app/ui/shared/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,11 +22,11 @@ import { toast } from "sonner";
 export default function EditProjectModal({
   project,
   open,
-  onOpenChange
+  onOpenChange,
 }: {
-  project: Project,
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  project: Project;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const [descriptionValue, setDescriptionValue] = useState(project.description || "");
 

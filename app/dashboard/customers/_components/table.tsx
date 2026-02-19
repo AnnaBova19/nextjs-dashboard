@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FormattedCustomersTable } from '@/app/lib/definitions';
+import { FormattedCustomersTable } from '@/app/dashboard/customers/_lib/types';
 
 export default async function CustomersTable({ customers }: { customers: Array<FormattedCustomersTable>}) {
 

@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { UpdateInvoice, DeleteInvoice } from '@/app/dashboard/invoices/_components/buttons';
 import InvoiceStatus from '@/app/dashboard/invoices/_components/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
-import { InvoicesTableType } from '@/app/lib/definitions';
+import { InvoicesTableType } from '@/app/dashboard/invoices/_lib/types';
 import {
   Table,
   TableBody,

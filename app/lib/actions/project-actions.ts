@@ -3,12 +3,13 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import postgres from 'postgres';
-import { Project } from '../definitions';
+import { Project } from "@/app/dashboard/projects/_lib/types";
+import { ProjectStatus } from '@/app/dashboard/projects/_lib/enums';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 const PROJECTS_ITEMS_PER_PAGE = 6;
-export async function fetchFilteredProjects(query: string, currentPage: number, status: "active" | "archived") {
+export async function fetchFilteredProjects(query: string, currentPage: number, status: ProjectStatus) {
   const offset = (currentPage - 1) * PROJECTS_ITEMS_PER_PAGE;
 
   try {
@@ -35,7 +36,7 @@ export async function fetchFilteredProjects(query: string, currentPage: number, 
   }
 }
 
-export async function fetchProjectsPages(query: string, status: "active" | "archived") {
+export async function fetchProjectsPages(query: string, status: ProjectStatus) {
   try {
     const data = await sql`SELECT COUNT(*)
       FROM projects
@@ -52,13 +53,13 @@ export async function fetchProjectsPages(query: string, status: "active" | "arch
   }
 }
 
-export async function updateProjectStatus(id: string, status: "active" | "archived") {
+export async function updateProjectStatus(id: string, status: ProjectStatus) {
   try {
     await sql`
       UPDATE projects
       SET
         status = ${status},
-        archived_at = ${status === "archived" ? new Date() : null}
+        archived_at = ${status === ProjectStatus.ARCHIVED ? new Date() : null}
       WHERE id = ${id}
     `;
     revalidatePath('/dashboard/projects');
@@ -102,7 +103,7 @@ export async function createProject(prevState: State, formData: FormData) {
   }
 
   const { name, description } = validatedFields.data;
-  const status = 'active';
+  const status = ProjectStatus.ACTIVE;
 
   try {
     await sql`

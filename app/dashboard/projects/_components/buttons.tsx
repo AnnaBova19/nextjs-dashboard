@@ -9,22 +9,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Project } from '@/app/lib/definitions';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
+import { Project } from '@/app/dashboard/projects/_lib/types';
+import { ProjectStatus } from '../_lib/enums';
 
-export function ProjectAction({ project, onEdit }: { project: Project, onEdit: () => void }) {
+export function ProjectAction({
+  project,
+  onEdit,
+}: {
+  project: Project;
+  onEdit: () => void;
+}) {
   const [isPending, startTransition] = useTransition();
 
   const handleStatusChange = () => {
     const newStatus =
-      project.status === "archived" ? "active" : "archived";
+      project.status === ProjectStatus.ARCHIVED ? ProjectStatus.ACTIVE : ProjectStatus.ARCHIVED;
 
     startTransition(async () => {
       try {
         await updateProjectStatus(project.id, newStatus);
         toast.success(
-          newStatus === "archived"
+          newStatus === ProjectStatus.ARCHIVED
             ? "Project was successfully archived"
             : "Project was successfully unarchived"
         );
@@ -42,7 +49,7 @@ export function ProjectAction({ project, onEdit }: { project: Project, onEdit: (
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {project.status === "active" && (
+        {project.status === ProjectStatus.ACTIVE && (
           <DropdownMenuItem onClick={onEdit}>
             Edit
           </DropdownMenuItem>
@@ -51,7 +58,7 @@ export function ProjectAction({ project, onEdit }: { project: Project, onEdit: (
           onClick={handleStatusChange}
           disabled={isPending}
         >
-          {project.status === "archived" ? (
+          {project.status === ProjectStatus.ARCHIVED ? (
             <>Unarchive</>
           ) : (
             <>Archive</>

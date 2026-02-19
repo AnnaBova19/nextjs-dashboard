@@ -1,14 +1,11 @@
 import postgres from 'postgres';
 import {
-  CustomerField,
-  CustomerForm,
-  CustomersTableType,
-  InvoiceForm,
-  InvoicesTableType,
   LatestInvoiceRaw,
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { InvoiceForm, InvoicesTableType } from '../dashboard/invoices/_lib/types';
+import { CustomerField, CustomerForm, CustomersTableType } from '../dashboard/customers/_lib/types';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { State, updateCustomer } from "@/app/lib/actions/customer-actions";
-import { CustomerForm } from "@/app/lib/definitions";
+import { CustomerForm } from "@/app/dashboard/customers/_lib/types";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";

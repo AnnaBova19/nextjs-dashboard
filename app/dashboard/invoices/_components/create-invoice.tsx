@@ -1,6 +1,5 @@
 'use client';
 
-import { CustomerField } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
   CheckIcon,
@@ -14,6 +13,7 @@ import { useActionState, useEffect } from 'react';
 import { Label } from '@/app/ui/shared/label';
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
+import { CustomerField } from '@/app/dashboard/customers/_lib/types';
 
 export default function CreateInvoiceForm({ customers }: { customers: CustomerField[] }) {
   const router = useRouter();

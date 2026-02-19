@@ -1,5 +1,5 @@
 import { deleteCustomer } from '@/app/lib/actions/customer-actions';
-import { CustomerForm } from '@/app/lib/definitions';
+import { CustomerForm } from '@/app/dashboard/customers/_lib/types';
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 

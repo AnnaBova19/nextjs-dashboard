@@ -1,17 +1,16 @@
-
-
 import { fetchFilteredProjects, fetchProjectsPages } from "@/app/lib/actions/project-actions";
 import ProjectsEmptyState from "./projects-empty-state";
 import ProjectsList from "./projects-list";
+import { ProjectStatus } from "../_lib/enums";
 
 export default async function ProjectsSectionTabContent({
   query,
   currentPage,
-  status
+  status,
 }: {
-  query: string
-  currentPage: number,
-  status: "active" | "archived"
+  query: string;
+  currentPage: number;
+  status: ProjectStatus;
 }) {
   const [projects, totalPages] = await Promise.all([
     fetchFilteredProjects(query, currentPage, status),
@@ -20,17 +19,17 @@ export default async function ProjectsSectionTabContent({
 
   if (!projects || !projects.length) {
     return <ProjectsEmptyState
-      title={status === "active" ? "No active projects found" : "No archived projects found"}
+      title={status === ProjectStatus.ACTIVE ? "No active projects found" : "No archived projects found"}
       description={
-        status === "active"
+        status === ProjectStatus.ACTIVE
         ? "Looks like you haven't added any projects yet."
         : "Looks like you haven't archived any projects yet."
       }
-      ctaText={status === "active" ? "Create Project" : ""}
+      ctaText={status === ProjectStatus.ACTIVE ? "Create Project" : ""}
     />;
   }
 
   return (
-    <ProjectsList projects={projects} totalPages={totalPages} status={status} />
+    <ProjectsList projects={projects} totalPages={totalPages} />
   );
 }

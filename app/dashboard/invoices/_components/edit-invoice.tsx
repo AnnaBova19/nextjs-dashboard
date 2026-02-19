@@ -1,6 +1,5 @@
 'use client';
 
-import { CustomerField, InvoiceForm } from '@/app/lib/definitions';
 import {
   CheckIcon,
   ClockIcon,
@@ -14,6 +13,9 @@ import { useActionState, useEffect } from 'react';
 import { Label } from '@/app/ui/shared/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { InvoiceForm } from '@/app/dashboard/invoices/_lib/types';
+import { CustomerField } from '@/app/dashboard/customers/_lib/types';
+import { InvoiceStatus } from '../_lib/enums';
 
 export default function EditInvoiceForm({
   invoice,
@@ -117,7 +119,7 @@ export default function EditInvoiceForm({
                   name="status"
                   type="radio"
                   value="pending"
-                  defaultChecked={invoice.status === 'pending'}
+                  defaultChecked={invoice.status === InvoiceStatus.PENDING}
                   className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
                   aria-describedby="status-error"
                 />
@@ -134,7 +136,7 @@ export default function EditInvoiceForm({
                   name="status"
                   type="radio"
                   value="paid"
-                  defaultChecked={invoice.status === 'paid'}
+                  defaultChecked={invoice.status === InvoiceStatus.PENDING}
                   className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
                   aria-describedby="status-error"
                 />

@@ -8,11 +8,11 @@ import CreateProjectModal from "./create-project-modal";
 export default function ProjectsEmptyState({
   title,
   description,
-  ctaText
+  ctaText,
 }: {
-  title: string,
-  description: string,
-  ctaText?: string
+  title: string;
+  description: string;
+  ctaText?: string;
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 

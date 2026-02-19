@@ -20,10 +20,10 @@ import { toast } from "sonner";
 
 export default function CreateProjectModal({
   open,
-  onOpenChange
+  onOpenChange,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const [descriptionValue, setDescriptionValue] = useState("");
   const initialState: State = { success: false, errors: {}, message: null };

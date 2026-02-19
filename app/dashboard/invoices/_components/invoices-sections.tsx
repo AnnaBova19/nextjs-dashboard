@@ -8,8 +8,8 @@ export default async function InvoicesSection({
   query,
   currentPage,
 }: {
-  query: string
-  currentPage: number
+  query: string;
+  currentPage: number;
 }) {
   const [invoices, totalPages] = await Promise.all([
     fetchFilteredInvoices(query, currentPage),
