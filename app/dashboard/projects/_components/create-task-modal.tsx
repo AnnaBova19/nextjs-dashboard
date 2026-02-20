@@ -1,7 +1,4 @@
-'use client';
-
-import { updateProject } from "@/app/lib/actions/project-actions";
-import { Project } from "@/app/dashboard/projects/_lib/types";
+import { Label } from "@/app/ui/shared/label";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,14 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import { ProjectSchema } from "../_lib/schemas";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { TaskSchema } from "../_lib/schemas";
 import z from "zod";
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -32,70 +28,45 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 
-export default function EditProjectModal({
-  project,
+export default function CreateTaskModal({
   open,
   onOpenChange,
 }: {
-  project: Project;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const UpdateProject = ProjectSchema.omit({ id: true, created_at: true });
   const form = useForm({
-    resolver: zodResolver(UpdateProject),
-    defaultValues: { name: project.name, description: project.description },
+    resolver: zodResolver(TaskSchema),
+    defaultValues: { title: "", description: "" },
   });
 
-  async function onSubmit(data: z.infer<typeof UpdateProject>) {
-    const result = await updateProject(project.id, data);
-    if (result.success) {
-      toast.success(result.message);
-      onOpenChange(false);
-      form.reset();
-    } else {
-      toast.error(result.message);
-      if (result.errors) {
-        Object.entries(result.errors).forEach(([field, messages]) => {
-          form.setError(field as any, {
-            type: "server",
-            message: Array.isArray(messages) ? messages[0] : messages,
-          });
-        });
-      }
-    }
+  function onSubmit(data: z.infer<typeof TaskSchema>) {
   }
-
-  useEffect(() => {
-    if (!open) {
-      form.reset();
-    }
-  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
+          <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          Update your project’s details here.
+          Fill out the form below to create a new task.
         </DialogDescription>
-        <form id="update-project-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="create-task-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
-              name="name"
+              name="title"
               control={form.control}
               render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel required htmlFor="update-project-form-name">
+                <FieldLabel htmlFor="create-task-form-title">
                   Title
                 </FieldLabel>
                 <Input
                   {...field}
-                  id="update-project-form-name"
+                  id="create-task-form-title"
                   aria-invalid={fieldState.invalid}
-                  placeholder="Enter project name"
+                  placeholder="Enter task title"
                   autoComplete="off"
                 />
                 {fieldState.invalid && (
@@ -110,14 +81,14 @@ export default function EditProjectModal({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel required htmlFor="update-project-form-description">
+                  <FieldLabel htmlFor="create-task-form-description">
                     Description
                   </FieldLabel>
                   <InputGroup>
                     <InputGroupTextarea
                       {...field}
-                      id="update-project-form-description"
-                      placeholder="Enter project description"
+                      id="create-task-form-description"
+                      placeholder="Enter task description"
                       rows={6}
                       className="min-h-24 resize-none"
                       aria-invalid={fieldState.invalid}
@@ -128,6 +99,7 @@ export default function EditProjectModal({
                       </InputGroupText>
                     </InputGroupAddon>
                   </InputGroup>
+
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -144,7 +116,7 @@ export default function EditProjectModal({
             <Button type="button" variant="outline" onClick={() => form.reset()}>
               Reset
             </Button>
-            <Button type="submit" form="update-project-form" disabled={form.formState.isSubmitting}>
+            <Button type="submit" form="create-task-form">
               Save Changes
             </Button>
           </Field>

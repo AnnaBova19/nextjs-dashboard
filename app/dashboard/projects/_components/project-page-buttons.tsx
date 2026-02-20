@@ -6,11 +6,6 @@ import { ArchiveBoxIcon, ArrowUpOnSquareIcon, PencilIcon } from "@heroicons/reac
 import { useState, useTransition } from "react";
 import EditProjectModal from "./edit-project-modal";
 import { ProjectStatus } from "../_lib/enums";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { toast } from "sonner";
 import { updateProjectStatus } from "@/app/lib/actions/project-actions";
 
@@ -44,36 +39,20 @@ export default function ProjectPageButtons({
     <>
       <div className="flex justify-end gap-2">
         {project.status === ProjectStatus.ACTIVE && ( 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" className="w-[36px]"
-                onClick={() => setIsModalOpen(true)}>
-                <PencilIcon />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Edit</p>
-            </TooltipContent>
-          </Tooltip>
+          <Button variant="outline" className="w-[36px]"
+            onClick={() => setIsModalOpen(true)}>
+            <PencilIcon />
+          </Button>
         )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" className="w-[36px]"
-                onClick={handleStatusChange}
-                disabled={isPending}>
-                  {project.status === ProjectStatus.ACTIVE ? (
-                    <ArchiveBoxIcon />
-                  ) : (
-                    <ArrowUpOnSquareIcon />
-                  )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {project.status === ProjectStatus.ACTIVE ? 'Archive' : 'Unarchive'}
-              </p>
-            </TooltipContent>
-          </Tooltip>
+          <Button variant="outline" className="w-[36px]"
+            onClick={handleStatusChange}
+            disabled={isPending}>
+              {project.status === ProjectStatus.ACTIVE ? (
+                <ArchiveBoxIcon />
+              ) : (
+                <ArrowUpOnSquareIcon />
+              )}
+          </Button>
       </div>
 
       <EditProjectModal

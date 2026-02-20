@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { UpdateInvoice, DeleteInvoice } from '@/app/dashboard/invoices/_components/buttons';
 import InvoiceStatus from '@/app/dashboard/invoices/_components/status';
-import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
+import { formatCurrency } from '@/app/lib/utils';
 import { InvoicesTableType } from '@/app/dashboard/invoices/_lib/types';
 import {
   Table,
@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { format } from 'date-fns';
 
 export default async function InvoicesTable({ invoices }: { invoices: Array<InvoicesTableType> }) {
 
@@ -48,7 +49,7 @@ export default async function InvoicesTable({ invoices }: { invoices: Array<Invo
                       <p className="text-xl font-medium">
                         {formatCurrency(invoice.amount)}
                       </p>
-                      <p>{formatDateToLocal(invoice.date)}</p>
+                      <p>{format(new Date(invoice.created_at), "MMM d, yyyy")}</p>
                     </div>
                     <div className="flex justify-end gap-2">
                       <UpdateInvoice id={invoice.id} />
@@ -90,7 +91,7 @@ export default async function InvoicesTable({ invoices }: { invoices: Array<Invo
                     </TableCell>
                     <TableCell className="whitespace-nowrap px-3 py-3">{invoice.email}</TableCell>
                     <TableCell className="whitespace-nowrap px-3 py-3">{formatCurrency(invoice.amount)}</TableCell>
-                    <TableCell className="whitespace-nowrap px-3 py-3">{formatDateToLocal(invoice.date)}</TableCell>
+                    <TableCell className="whitespace-nowrap px-3 py-3">{format(new Date(invoice.created_at), "MMM d, yyyy")}</TableCell>
                     <TableCell className="whitespace-nowrap px-3 py-3"><InvoiceStatus status={invoice.status} /></TableCell>
                     <TableCell className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex justify-end gap-3">

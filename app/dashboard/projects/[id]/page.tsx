@@ -5,12 +5,17 @@ import Status from '../_components/status';
 import ProjectPageButtons from '../_components/project-page-buttons';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import TasksList from '../_components/tasks-list';
+import { fetchProjectTasksById } from '@/app/lib/actions/task-actions';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const project = await fetchProjectById(id)
+  const [project, tasks] = await Promise.all([
+    fetchProjectById(id),
+    fetchProjectTasksById(id),
+  ]);
   if (!project) {
     notFound();
   }
@@ -31,6 +36,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       </div>
       <Status status={project.status}/>
       <div>{project.description}</div>
+      <TasksList tasks={tasks}/>
     </div>
   );
 }

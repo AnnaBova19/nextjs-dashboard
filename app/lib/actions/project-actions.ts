@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import postgres from 'postgres';
 import { Project } from "@/app/dashboard/projects/_lib/types";
 import { ProjectStatus } from '@/app/dashboard/projects/_lib/enums';
+import { ProjectSchema } from '@/app/dashboard/projects/_lib/schemas';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -25,7 +26,7 @@ export async function fetchFilteredProjects(query: string, currentPage: number, 
               )`
             : sql``
         }
-      ORDER BY projects.created_at DESC
+      ORDER BY projects.updated_at DESC
       LIMIT ${PROJECTS_ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
@@ -78,7 +79,7 @@ export async function updateProjectStatus(id: string, status: ProjectStatus) {
       UPDATE projects
       SET
         status = ${status},
-        archived_at = ${status === ProjectStatus.ARCHIVED ? new Date() : null}
+        archived_at = ${status === ProjectStatus.ARCHIVED ? new Date().toISOString() : null}
       WHERE id = ${id}
     `;
     revalidatePath('/dashboard/projects');
@@ -88,40 +89,18 @@ export async function updateProjectStatus(id: string, status: ProjectStatus) {
   }
 }
 
-export type State = {
-  success: boolean;
-  errors?: {
-    name?: string[];
-    description?: string[];
-  };
-  message?: string | null;
-};
-
-const FormSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, { message: "Name is required" }).trim(),
-  description: z.string().min(1, { message: "Description is required" }).trim(),
-  created_at: z.string(),
-});
-
-const CreateProject = FormSchema.omit({ id: true, created_at: true });
-export async function createProject(prevState: State, formData: FormData) {
-  // Validate form using Zod
-  const validatedFields = CreateProject.safeParse({
-    name: formData.get('name'),
-    description: formData.get('description'),
-  });
- 
-  // If form validation fails, return errors early. Otherwise, continue.
-  if (!validatedFields.success) {
+const CreateProject = ProjectSchema.omit({ id: true, created_at: true });
+export async function createProject(data: z.infer<typeof CreateProject>) {
+  const validated = CreateProject.safeParse(data);
+  if (!validated.success) {
     return {
       success: false,
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: validated.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Create Project.',
     };
   }
 
-  const { name, description } = validatedFields.data;
+  const { name, description } = validated.data;
   const status = ProjectStatus.ACTIVE;
 
   try {
@@ -135,32 +114,26 @@ export async function createProject(prevState: State, formData: FormData) {
   }
 
   revalidatePath('/dashboard/projects');
-  return { success: true, errors: {}, message: 'Project created successfully!' };
+  return { success: true, message: 'Project created successfully!' };
 }
 
-const UpdateProject = FormSchema.omit({ id: true, created_at: true });
-export async function updateProject(id: string, prevState: State, formData: FormData) {
-  // Validate form using Zod
-  const validatedFields = UpdateProject.safeParse({
-    name: formData.get('name'),
-    description: formData.get('description'),
-  });
- 
-  // If form validation fails, return errors early. Otherwise, continue.
-  if (!validatedFields.success) {
+const UpdateProject = ProjectSchema.omit({ id: true, created_at: true });
+export async function updateProject(id: string, data: z.infer<typeof UpdateProject>) {
+  const validated = UpdateProject.safeParse(data);
+  if (!validated.success) {
     return {
       success: false,
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: validated.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Update Project.',
     };
   }
 
-  const { name, description } = validatedFields.data;
+  const { name, description } = validated.data;
 
   try {
     await sql`
       UPDATE projects
-      SET name = ${name}, description = ${description}
+      SET name = ${name}, description = ${description}, updated_at = NOW()
       WHERE id = ${id}
     `;
   } catch (error) {
@@ -169,7 +142,7 @@ export async function updateProject(id: string, prevState: State, formData: Form
   }
 
   revalidatePath('/dashboard/projects');
-  return { success: true, errors: {}, message: 'Project updated successfully!' };
+  return { success: true, message: 'Project updated successfully!' };
 }
 
 export async function deleteProject(id: string) {

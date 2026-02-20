@@ -7,7 +7,8 @@ export type InvoicesTableType = {
   last_name: string;
   email: string;
   image_url: string;
-  date: string;
+  created_at: number;
+  updated_at: number;
   amount: number;
   status: InvoiceStatus;
 };

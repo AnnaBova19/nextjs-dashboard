@@ -5,165 +5,185 @@ import {
   CheckIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  UserCircleIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from "@/components/ui/button";
-import { createInvoice, State } from '@/app/lib/actions/invoice-actions';
-import { useActionState, useEffect } from 'react';
-import { Label } from '@/app/ui/shared/label';
+import { Button, buttonVariants } from "@/components/ui/button";
+import { createInvoice } from '@/app/lib/actions/invoice-actions';
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
 import { CustomerField } from '@/app/dashboard/customers/_lib/types';
+import { InvoiceSchema } from '../_lib/schemas';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import z from 'zod';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
-export default function CreateInvoiceForm({ customers }: { customers: CustomerField[] }) {
+export default function CreateInvoiceForm({
+  customers
+}: {
+  customers: CustomerField[]
+}) {
   const router = useRouter();
-  
-  const initialState: State = { success: false, errors: {}, message: null };
-  const [state, formAction, isPending] = useActionState(createInvoice, initialState);
 
-  useEffect(() => {
-    if (state.success && state.message) {
-      toast.success(state.message);
-      setTimeout(() => {
-        router.push('/dashboard/invoices');
-      }, 100);
+  const CreateInvoice = InvoiceSchema.omit({ id: true, created_at: true });
+  const form = useForm({
+    resolver: zodResolver(CreateInvoice),
+    defaultValues: { customerId: "", amount: "" as any, status: undefined },
+  });
+
+  async function onSubmit(data: z.infer<typeof CreateInvoice>) {
+    const result = await createInvoice(data);
+    if (result.success) {
+      toast.success(result.message);
+      router.push('/dashboard/invoices');
+    } else {
+      toast.error(result.message);
+      if (result.errors) {
+        Object.entries(result.errors).forEach(([field, messages]) => {
+          form.setError(field as any, {
+            type: "server",
+            message: Array.isArray(messages) ? messages[0] : messages,
+          });
+        });
+      }
     }
-  }, [state, router]);
+  }
 
   return (
-    <form action={formAction}>
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* Customer Name */}
-        <div className="mb-4">
-          <Label htmlFor="customer" required>
-            Choose customer
-          </Label>
-          <div className="relative">
-            <select
-              id="customer"
-              name="customerId"
-              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue=""
-              aria-describedby="customer-error"
-              //required // client side validation to ensure a customer is selected
-            >
-              <option value="" disabled>
-                Select a customer
-              </option>
-              {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.first_name} {customer.last_name}
-                </option>
-              ))}
-            </select>
-            <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
-          <div id="customer-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.customerId &&
-              state.errors.customerId.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
-
-        {/* Invoice Amount */}
-        <div className="mb-4">
-          <Label htmlFor="amount" required>
-            Choose an amount
-          </Label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="amount"
-                name="amount"
-                type="number"
-                step="0.01"
-                placeholder="Enter USD amount"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                aria-describedby="amount-error"
-                //required // client side validation to ensure an amount is entered
-              />
-              <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
-          <div id="amount-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.amount &&
-              state.errors.amount.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
-
-        {/* Invoice Status */}
-        <fieldset>
-          <legend className="mb-2 block text-sm font-medium">
-            Set the invoice status <span className="text-red-500">*</span>
-          </legend>
-          <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
-            <div className="flex gap-4">
-              <div className="flex items-center">
-                <input
-                  id="pending"
-                  name="status"
-                  type="radio"
-                  value="pending"
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                  aria-describedby="status-error"
-                  //required // client side validation to ensure a status is selected
-                />
-                <label
-                  htmlFor="pending"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"
+    <div className="rounded-md border border-gray-200 p-4 md:p-6">
+      <form id="create-invoice-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <FieldGroup>
+          <Controller
+            name="customerId"
+            control={form.control}
+            render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel required htmlFor="create-invoice-form-customerId">
+                Choose customer
+              </FieldLabel>
+              <Select
+                name={field.name}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger
+                  id="create-invoice-form-customerId"
+                  aria-invalid={fieldState.invalid}
+                  className="min-w-[120px]"
                 >
-                  Pending <ClockIcon className="h-4 w-4" />
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="paid"
-                  name="status"
-                  type="radio"
-                  value="paid"
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                  aria-describedby="status-error"
-                  // required // client side validation to ensure a status is selected
-                />
-                <label
-                  htmlFor="paid"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
-                >
-                  Paid <CheckIcon className="h-4 w-4" />
-                </label>
-              </div>
-            </div>
-          </div>
-          <div id="status-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.status &&
-              state.errors.status.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </fieldset>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent position="item-aligned">
+                  {customers.map((customer) => (
+                    <SelectItem key={customer.id} value={customer.id}>
+                      {customer.first_name} {customer.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+            )}
+          />
 
-        <div aria-live="polite" aria-atomic="true">
-          {!state.success && state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
-        </div>
-      </div>
-      <div className="mt-6 flex justify-end gap-4">
+          <Controller
+            name="amount"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel required htmlFor="create-invoice-form-amount">
+                  Choose an amount
+                </FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    {...field}
+                    id="create-invoice-form-amount"
+                    type="number"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter USD amount"
+                    autoComplete="off"
+                  />
+                  <InputGroupAddon align="inline-start">
+                    <CurrencyDollarIcon className="text-muted-foreground" />
+                  </InputGroupAddon>
+                </InputGroup>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="status"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel required htmlFor="create-invoice-form-status">
+                  Set the invoice status
+                </FieldLabel>
+                <RadioGroup 
+                  className="flex flex-row items-center"
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}>
+                  <Field orientation="horizontal">
+                    <RadioGroupItem value="pending" id="pending" aria-invalid={fieldState.invalid} />
+                    <FieldLabel htmlFor="pending" className="font-normal">
+                      <div className='flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600'>
+                        Pending <ClockIcon className="h-4 w-4" />
+                      </div>
+                    </FieldLabel>
+                  </Field>
+                  <Field orientation="horizontal">
+                    <RadioGroupItem value="paid" id="paid" aria-invalid={fieldState.invalid} />
+                    <FieldLabel htmlFor="paid" className="font-normal">
+                      <div className='flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white'>
+                        Paid <CheckIcon className="h-4 w-4" />
+                      </div>
+                    </FieldLabel>
+                  </Field>
+                </RadioGroup>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        </FieldGroup>
+      </form>
+      <Field orientation="horizontal" className="justify-end mt-6">
         <Link
           href="/dashboard/invoices"
-          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+          className={buttonVariants({ variant: "outline" })}
         >
           Cancel
         </Link>
-        <Button type="submit" disabled={isPending}>Create Invoice</Button>
-      </div>
-    </form>
+        <Button type="button" variant="outline" onClick={() => form.reset()}>
+          Reset
+        </Button>
+        <Button type="submit" form="create-invoice-form" disabled={form.formState.isSubmitting}>
+          Save Changes
+        </Button>
+      </Field>
+    </div>
   );
 }
