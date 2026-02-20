@@ -86,7 +86,7 @@ export async function fetchCardData() {
 }
 
 // INVOICES
-const INVOICES_ITEMS_PER_PAGE = 6;
+const INVOICES_ITEMS_PER_PAGE = 10;
 export async function fetchFilteredInvoices(query: string, currentPage: number) {
   const offset = (currentPage - 1) * INVOICES_ITEMS_PER_PAGE;
 
@@ -187,7 +187,7 @@ export async function fetchCustomers() {
 }
 
 // CUSTOMERS
-const CUSTOMERS_ITEMS_PER_PAGE = 6;
+const CUSTOMERS_ITEMS_PER_PAGE = 10;
 export async function fetchFilteredCustomers(query: string, currentPage: number) {
   const offset = (currentPage - 1) * CUSTOMERS_ITEMS_PER_PAGE;
 

@@ -28,7 +28,7 @@ export default function EditProjectModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [descriptionValue, setDescriptionValue] = useState(project.description || "");
+  const [descriptionValue, setDescriptionValue] = useState(project.description);
 
   const initialState: State = { success: false, errors: {}, message: null };
   const updateProjectWithId = updateProject.bind(null, project.id);
@@ -45,7 +45,6 @@ export default function EditProjectModal({
     if (state.success && state.message) {
       toast.success(state.message);
       onOpenChange(false);
-      setDescriptionValue("");
     }
   }, [state]);
 

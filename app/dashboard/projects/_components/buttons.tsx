@@ -23,7 +23,8 @@ export function ProjectAction({
 }) {
   const [isPending, startTransition] = useTransition();
 
-  const handleStatusChange = () => {
+  const handleStatusChange = (e: React.MouseEvent) => {
+    e.stopPropagation(); 
     const newStatus =
       project.status === ProjectStatus.ARCHIVED ? ProjectStatus.ACTIVE : ProjectStatus.ARCHIVED;
 
@@ -50,7 +51,12 @@ export function ProjectAction({
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {project.status === ProjectStatus.ACTIVE && (
-          <DropdownMenuItem onClick={onEdit}>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
             Edit
           </DropdownMenuItem>
         )}

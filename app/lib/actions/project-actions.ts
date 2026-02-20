@@ -8,7 +8,7 @@ import { ProjectStatus } from '@/app/dashboard/projects/_lib/enums';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-const PROJECTS_ITEMS_PER_PAGE = 6;
+const PROJECTS_ITEMS_PER_PAGE = 10;
 export async function fetchFilteredProjects(query: string, currentPage: number, status: ProjectStatus) {
   const offset = (currentPage - 1) * PROJECTS_ITEMS_PER_PAGE;
 
@@ -50,6 +50,25 @@ export async function fetchProjectsPages(query: string, status: ProjectStatus) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch total number of projects.');
+  }
+}
+
+export async function fetchProjectById(id: string) {
+  try {
+    const data = await sql<Project[]>`
+      SELECT
+        projects.id,
+        projects.name,
+        projects.description,
+        projects.status
+      FROM projects
+      WHERE projects.id = ${id};
+    `;
+
+    return data[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch project.');
   }
 }
 
@@ -126,8 +145,6 @@ export async function updateProject(id: string, prevState: State, formData: Form
     name: formData.get('name'),
     description: formData.get('description'),
   });
-
-  console.log(222, validatedFields)
  
   // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {

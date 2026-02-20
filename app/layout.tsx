@@ -3,6 +3,7 @@ import '@/app/ui/global.css';
 import '@/app/ui/variables.module.scss';
 import { Metadata } from 'next';
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export const metadata: Metadata = {
   title: {
@@ -21,8 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <main>{children}</main>
-        <Toaster position="top-center" />
+        <TooltipProvider>
+          <main>{children}</main>
+          <Toaster position="top-center" />
+        </TooltipProvider>
       </body>
     </html>
   );
