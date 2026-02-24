@@ -36,7 +36,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       </div>
       <Status status={project.status}/>
       <div>{project.description}</div>
-      <TasksList tasks={tasks}/>
+      <TasksList projectId={id} tasks={tasks}/>
     </div>
   );
 }

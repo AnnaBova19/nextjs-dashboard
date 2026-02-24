@@ -7,8 +7,10 @@ import { useState } from "react";
 import CreateTaskModal from "./create-task-modal";
 
 export default function TasksList({
+  projectId,
   tasks,
 }: {
+  projectId: string;
   tasks: Task[]
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +30,7 @@ export default function TasksList({
         </>
       )}
 
-      <CreateTaskModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+      <CreateTaskModal projectId={projectId} open={isModalOpen} onOpenChange={setIsModalOpen} />
     </>
   );
 }
