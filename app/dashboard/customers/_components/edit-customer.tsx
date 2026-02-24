@@ -1,15 +1,23 @@
 'use client';
 
-import { State, updateCustomer } from "@/app/lib/actions/customer-actions";
+import { updateCustomer } from "@/app/lib/actions/customer-actions";
 import { CustomerForm } from "@/app/dashboard/customers/_lib/types";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import ImageUploader from "@/app/dashboard/customers/_components/image-uploader";
-import { Label } from "@/app/ui/shared/label";
-import { AtSymbolIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { UpdateCustomerSchema } from "../_lib/schemas";
 
 export default function EditCustomerForm({
   customer
@@ -17,132 +25,155 @@ export default function EditCustomerForm({
   customer: CustomerForm;
 }) {
   const router = useRouter();
-  const [isOldImageRemoved, setIsOldImageRemoved] = useState(false);
-  
-  const initialState: State = { success: false, errors: {}, message: null };
-  const updateCustomerWithId = updateCustomer.bind(null, customer.id, isOldImageRemoved);
-  const [state, formAction, isPending] = useActionState(updateCustomerWithId, initialState);
 
-  const onRemove = () => { setIsOldImageRemoved(true) }
+  const form = useForm({
+    resolver: zodResolver(UpdateCustomerSchema),
+    defaultValues: {
+      imageFile: undefined,
+      firstName: customer.first_name,
+      lastName: customer.last_name,
+      email: customer.email,
+      oldImageUrl: customer.image_url,
+      isOldImageRemoved: false,
+    },
+  });
 
-  useEffect(() => {
-    if (state.success && state.message) {
-      toast.success(state.message);
-      setTimeout(() => {
-        router.push('/dashboard/customers');
-      }, 100);
+  async function onSubmit(data: z.infer<typeof UpdateCustomerSchema>) {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== 'imageFile') {
+        formData.append(key, value as string);
+      }
+    });
+    if (data.imageFile instanceof File) {
+      formData.append('imageFile', data.imageFile);
     }
-  }, [state, router]);
+
+    const result = await updateCustomer(customer.id, formData);
+    if (result.success) {
+      toast.success(result.message);
+      router.push('/dashboard/customers');
+    } else {
+      toast.error(result.message);
+      if (result.errors) {
+        Object.entries(result.errors).forEach(([field, messages]) => {
+          form.setError(field as any, {
+            type: "server",
+            message: Array.isArray(messages) ? messages[0] : messages,
+          });
+        });
+      }
+    }
+  }
 
   return (
-    <form action={formAction}>
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* Customer image */}
-        <div className="mb-4">
-          <ImageUploader state={state} imageUrl={customer.image_url} onRemove={onRemove} />
-        </div>
+    <div className="rounded-md border border-gray-200 p-4 md:p-6">
+      <form id="update-customer-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <FieldGroup>
+          <Controller
+            name="imageFile"
+            control={form.control}
+            render={({ field, fieldState }) => (
+            <ImageUploader 
+              label="Upload Image"
+              required
+              imageUrl={customer.image_url}
+              value={field.value}
+              error={fieldState.error?.message}
+              onChange={(file) => {
+                field.onChange(file);
+              }}
+              onRemove={() => {
+                form.setValue("isOldImageRemoved", true, { shouldValidate: true });
+                field.onChange(null);
+              }}
+            />
+            )}
+          />
 
-        {/* Customer first name */}
-        <div className="mb-4">
-          <Label htmlFor="firstName" required>
-            First Name
-          </Label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                defaultValue={customer.first_name}
+          <Controller
+            name="firstName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel required htmlFor="update-customer-form-firstName">
+                First Name
+              </FieldLabel>
+              <Input
+                {...field}
+                id="update-customer-form-firstName"
+                aria-invalid={fieldState.invalid}
                 placeholder="Enter customer first name"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                aria-describedby="firstName-error"
-                //required // client side validation to ensure an amount is entered
+                autoComplete="off"
               />
-              <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
-          <div id="firstName-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.firstName &&
-              state.errors.firstName.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+            )}
+          />
 
-        {/* Customer last name */}
-        <div className="mb-4">
-          <Label htmlFor="lastName" required>
-            Last Name
-          </Label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                defaultValue={customer.last_name}
+          <Controller
+            name="lastName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel required htmlFor="update-customer-form-lastName">
+                Last Name
+              </FieldLabel>
+              <Input
+                {...field}
+                id="update-customer-form-lastName"
+                aria-invalid={fieldState.invalid}
                 placeholder="Enter customer last name"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                aria-describedby="lastName-error"
+                autoComplete="off"
               />
-              <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
-          <div id="lastName-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.lastName &&
-              state.errors.lastName.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+            )}
+          />
 
-        {/* Customer email */}
-        <div className="mb-4">
-          <Label htmlFor="email" required>
-            Email
-          </Label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                defaultValue={customer.email}
+
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel required htmlFor="update-customer-form-email">
+                Email
+              </FieldLabel>
+              <Input
+                {...field}
+                id="update-customer-form-email"
+                aria-invalid={fieldState.invalid}
                 placeholder="Enter customer email"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                aria-describedby="email-error"
+                autoComplete="off"
               />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
-          <div id="email-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.email &&
-              state.errors.email.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
-
-        <div aria-live="polite" aria-atomic="true">
-          {!state.success && state.message && <p className="mt-2 text-sm text-red-500">{state.message}</p>}
-        </div>
-      </div>
-      <div className="mt-6 flex justify-end gap-4">
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+            )}
+          />
+        </FieldGroup>
+      </form>
+      <Field orientation="horizontal" className="justify-end mt-6">
         <Link
           href="/dashboard/customers"
-          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+          className={buttonVariants({ variant: "outline" })}
         >
           Cancel
         </Link>
-        <Button type="submit" disabled={isPending}>Edit Customer</Button>
-      </div> 
-    </form>
+        <Button type="button" variant="outline" onClick={() => form.reset()}>
+          Reset
+        </Button>
+        <Button type="submit" form="update-customer-form" disabled={form.formState.isSubmitting}>
+          Save Changes
+        </Button>
+      </Field>
+    </div>
   );
 }

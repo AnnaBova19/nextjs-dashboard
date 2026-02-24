@@ -20,5 +20,3 @@ export async function fetchProjectTasksById(id: string) {
     throw new Error('Failed to fetch project tasks.');
   }
 }
-
-const CreateTask = TaskSchema.omit({ id: true, created_at: true });

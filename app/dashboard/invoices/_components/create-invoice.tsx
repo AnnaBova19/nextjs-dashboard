@@ -11,7 +11,6 @@ import { createInvoice } from '@/app/lib/actions/invoice-actions';
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
 import { CustomerField } from '@/app/dashboard/customers/_lib/types';
-import { InvoiceSchema } from '../_lib/schemas';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
@@ -34,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { InvoiceSchema } from '../_lib/schemas';
 
 export default function CreateInvoiceForm({
   customers
@@ -42,13 +42,12 @@ export default function CreateInvoiceForm({
 }) {
   const router = useRouter();
 
-  const CreateInvoice = InvoiceSchema.omit({ id: true, created_at: true });
   const form = useForm({
-    resolver: zodResolver(CreateInvoice),
+    resolver: zodResolver(InvoiceSchema),
     defaultValues: { customerId: "", amount: "" as any, status: undefined },
   });
 
-  async function onSubmit(data: z.infer<typeof CreateInvoice>) {
+  async function onSubmit(data: z.infer<typeof InvoiceSchema>) {
     const result = await createInvoice(data);
     if (result.success) {
       toast.success(result.message);
@@ -109,27 +108,27 @@ export default function CreateInvoiceForm({
             name="amount"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel required htmlFor="create-invoice-form-amount">
-                  Choose an amount
-                </FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    {...field}
-                    id="create-invoice-form-amount"
-                    type="number"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter USD amount"
-                    autoComplete="off"
-                  />
-                  <InputGroupAddon align="inline-start">
-                    <CurrencyDollarIcon className="text-muted-foreground" />
-                  </InputGroupAddon>
-                </InputGroup>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel required htmlFor="create-invoice-form-amount">
+                Choose an amount
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  {...field}
+                  id="create-invoice-form-amount"
+                  type="number"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Enter USD amount"
+                  autoComplete="off"
+                />
+                <InputGroupAddon align="inline-start">
+                  <CurrencyDollarIcon className="text-muted-foreground" />
+                </InputGroupAddon>
+              </InputGroup>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
             )}
           />
 
@@ -137,35 +136,35 @@ export default function CreateInvoiceForm({
             name="status"
             control={form.control}
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel required htmlFor="create-invoice-form-status">
-                  Set the invoice status
-                </FieldLabel>
-                <RadioGroup 
-                  className="flex flex-row items-center"
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}>
-                  <Field orientation="horizontal">
-                    <RadioGroupItem value="pending" id="pending" aria-invalid={fieldState.invalid} />
-                    <FieldLabel htmlFor="pending" className="font-normal">
-                      <div className='flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600'>
-                        Pending <ClockIcon className="h-4 w-4" />
-                      </div>
-                    </FieldLabel>
-                  </Field>
-                  <Field orientation="horizontal">
-                    <RadioGroupItem value="paid" id="paid" aria-invalid={fieldState.invalid} />
-                    <FieldLabel htmlFor="paid" className="font-normal">
-                      <div className='flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white'>
-                        Paid <CheckIcon className="h-4 w-4" />
-                      </div>
-                    </FieldLabel>
-                  </Field>
-                </RadioGroup>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel required htmlFor="create-invoice-form-status">
+                Set the invoice status
+              </FieldLabel>
+              <RadioGroup 
+                className="flex flex-row items-center"
+                onValueChange={field.onChange}
+                defaultValue={field.value}>
+                <Field orientation="horizontal">
+                  <RadioGroupItem value="pending" id="pending" aria-invalid={fieldState.invalid} />
+                  <FieldLabel htmlFor="pending" className="font-normal">
+                    <div className='flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600'>
+                      Pending <ClockIcon className="h-4 w-4" />
+                    </div>
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <RadioGroupItem value="paid" id="paid" aria-invalid={fieldState.invalid} />
+                  <FieldLabel htmlFor="paid" className="font-normal">
+                    <div className='flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white'>
+                      Paid <CheckIcon className="h-4 w-4" />
+                    </div>
+                  </FieldLabel>
+                </Field>
+              </RadioGroup>
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
             )}
           />
         </FieldGroup>

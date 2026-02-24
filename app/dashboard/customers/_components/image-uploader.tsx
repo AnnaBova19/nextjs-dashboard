@@ -1,70 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import Image from 'next/image';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from '@/components/ui/input';
 
 export default function ImageUploader({
-  state,
+  label,
+  required,
   imageUrl,
   onRemove,
+  onChange,
+  value,
+  error,
 }: {
-  state: any;
+  label: string;
+  required?: boolean;
   imageUrl?: string | null;
   onRemove: () => void;
+  onChange: (file: File | null) => void;
+  value: any;
+  error?: string;
 }) {
-  const [imageSrc, setImageSrc] = useState<string | null>(imageUrl || null);
+  const [preview, setPreview] = useState<string | null>(imageUrl || null);
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Create a URL for the file to use as a preview source
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImageSrc(e.target?.result as string);
+        setPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+      onChange(file);
     } else {
-      setImageSrc(null);
+      setPreview(null);
     }
   };
 
-  const removeImage = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleRemove = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    setImageSrc(null);
+    setPreview(null);
+    onChange(null);
     if (imageUrl) { onRemove(); }
   };
 
   return (
-    <>
-      <label className="mb-2 block text-sm font-medium">
-        Upload Image <span className="text-red-500">*</span>
-      </label>
+    <Field data-invalid={!!error}>
+      <FieldLabel required={required} htmlFor="file-input-image">
+        {label}
+      </FieldLabel>
+
       <div className="relative mt-2 rounded-md">
         <div className="relative">
           <input type="hidden" name="oldImageUrl" value={imageUrl || ''} />
-          <input
-            id="imageFile"
-            name="imageFile"
+          <Input
+            id="file-input-image"
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={handleImageChange}
-            aria-describedby="imageFile-error"
+            onChange={handleFileChange}
           />
-          <label htmlFor="imageFile" className="cursor-pointer">
-            {imageSrc ? (
+          <label htmlFor="file-input-image" className="cursor-pointer">
+            {preview ? (
               <div className="relative w-32 h-32">
                 <Image
-                  src={imageSrc}
+                  src={preview}
                   alt="Image preview"
                   fill
                   sizes="28px"
                   className="rounded-lg object-cover"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-30 rounded-lg"></div>
-                <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={removeImage}>
+                <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={handleRemove}>
                   <TrashIcon className="w-8 h-8 text-white" />
                 </div>
               </div>
@@ -79,24 +94,7 @@ export default function ImageUploader({
           </label>
         </div>
       </div>
-      <div id="imageFile-error" aria-live="polite" aria-atomic="true">
-        {state.errors?.imageFile &&
-          state.errors.imageFile.map((error: string) => (
-            <p className="mt-2 text-sm text-red-500" key={error}>
-              {error}
-            </p>
-          ))}
-      </div>
-    </>
-    // <div>
-    //   <input type="file" accept="image/*" onChange={handleImageChange} />
-    //   {imageSrc && (
-    //     <div>
-    //       {/* Use the standard <img> tag for object URLs or data URLs in development. */}
-    //       {/* For the Next.js Image component, you would need to use the unoptimized prop for Data URLs */}
-    //       <img src={imageSrc} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px' }} />
-    //     </div>
-    //   )}
-    // </div>
+      {error && <FieldError errors={[{ message: error }]} />}
+    </Field>
   );
 };

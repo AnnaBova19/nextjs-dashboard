@@ -1,71 +1,39 @@
 'use server';
 
-import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { deleteImageFromS3, uploadImageToS3 } from './s3-actions';
 import { CustomerForm } from '@/app/dashboard/customers/_lib/types';
+import { CreateCustomerSchema, UpdateCustomerSchema } from '@/app/dashboard/customers/_lib/schemas';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-export type State = {
-  success: boolean;
-  errors?: {
-    imageFile?: string[];
-    firstName?: string[];
-    lastName?: string[];
-    email?: string[];
-  };
-  message?: string | null;
-};
-
-const MAX_FILE_SIZE = 1000000; // 1MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-
-const CreateCustomerFormSchema = z.object({
-  id: z.string(),
-  imageFile: z
-    .instanceof(File)
-    .refine((file) => file.size > 0, "Image is required.") // Check if a file is present and not empty
-    .refine((file) => file.size <= MAX_FILE_SIZE, "Max image size is 1MB.")
-    .refine(
-      (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
-      "Only .jpg, .jpeg, .png, and .webp formats are supported."
-    ),
-  firstName: z.string().min(1, { message: "First name is required" }).trim(),
-  lastName: z.string().min(1, { message: "Last name is required" }).trim(),
-  email: z.string().email(),
-});
-
-const CreateCustomer = CreateCustomerFormSchema.omit({ id: true });
-export async function createCustomer(prevState: State, formData: FormData) {
-  // Validate form using Zod
-  const validatedFields = CreateCustomer.safeParse({
+export async function createCustomer(formData: FormData) {
+  const validated = CreateCustomerSchema.safeParse({
     imageFile: formData.get('imageFile'),
     firstName: formData.get('firstName'),
     lastName: formData.get('lastName'),
     email: formData.get('email'),
   });
- 
-  // If form validation fails, return errors early. Otherwise, continue.
-  if (!validatedFields.success) {
+  if (!validated.success) {
     return {
       success: false,
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: validated.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Create Customer.',
     };
   }
 
-  const { firstName, lastName, email } = validatedFields.data;
-  let imageUrl: string | null;
+  const { imageFile, firstName, lastName, email } = validated.data;
+  let imageUrl: string | null = null;
 
   // Upload image to S3 and get the URL
   try {
-    const file = validatedFields.data.imageFile as File;
-    const uploadResult = await uploadImageToS3(file);
-    imageUrl = uploadResult.url || null;
-    if (!uploadResult.success || !imageUrl) {
-      return { success: false, message: uploadResult.error || 'Failed to upload image. Please try again.' };
+    if (imageFile instanceof File && imageFile.size > 0) {
+      const uploadResult = await uploadImageToS3(imageFile);
+      if (!uploadResult.success || !uploadResult.url) {
+        return { success: false, message: uploadResult.error || 'Failed to upload image. Please try again.' };
+      }
+      imageUrl = uploadResult.url || null;
     }
   } catch (error) {
     console.error('S3 Upload Error:', error);
@@ -84,68 +52,28 @@ export async function createCustomer(prevState: State, formData: FormData) {
   }
 
   revalidatePath('/dashboard/customers');
-  return { success: true, errors: {}, message: 'Customer created successfully!' };
+  return { success: true, message: 'Customer created successfully!' };
 }
 
-const UpdateCustomerFormSchema = z.object({
-  id: z.string(),
-  imageFile: z.instanceof(File).optional(),
-  firstName: z.string().min(1, { message: "First name is required" }).trim(),
-  lastName: z.string().min(1, { message: "Last name is required" }).trim(),
-  email: z.string().email(),
-  oldImageUrl: z.string().optional(), // Add oldImageUrl to the schema
-  isOldImageRemoved: z.boolean(),
-});
-const UpdateCustomer = UpdateCustomerFormSchema.omit({ id: true })
-  .superRefine((data, ctx) => {
-    if (data.isOldImageRemoved && !(data.imageFile instanceof File && data.imageFile.size > 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['imageFile'],
-        message: "Image is required.",
-      });
-    }
-  })
-  .superRefine((data, ctx) => {
-    if (data.isOldImageRemoved && data.imageFile instanceof File && data.imageFile.size > MAX_FILE_SIZE) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['imageFile'],
-        message: "Max image size is 1MB.",
-      });
-    }
-  })
-  .superRefine((data, ctx) => {
-    if (data.isOldImageRemoved &&data.imageFile instanceof File && !ACCEPTED_IMAGE_TYPES.includes(data.imageFile.type)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['imageFile'],
-        message: "Only .jpg, .jpeg, .png, and .webp formats are supported.",
-      });
-    }
-  });
-
-export async function updateCustomer(id: string, isOldImageRemoved: boolean, prevState: State, formData: FormData) {
-  // Validate form using Zod
-  const validatedFields = UpdateCustomer.safeParse({
+export async function updateCustomer(id: string, formData: FormData) {
+  const isRemoved = formData.get('isOldImageRemoved') === 'true';
+  const validated = UpdateCustomerSchema.safeParse({
     imageFile: formData.get('imageFile'),
     firstName: formData.get('firstName'),
     lastName: formData.get('lastName'),
     email: formData.get('email'),
-    isOldImageRemoved,
+    oldImageUrl: formData.get('oldImageUrl'),
+    isOldImageRemoved: isRemoved,
   });
- 
-  // If form validation fails, return errors early. Otherwise, continue.
-  if (!validatedFields.success) {
+  if (!validated.success) {
     return {
       success: false,
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: validated.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Update Customer.',
     };
   }
 
-  const { imageFile, firstName, lastName, email } = validatedFields.data;
-  const oldImageUrl = formData.get('oldImageUrl') as string | null;
+  const { imageFile, firstName, lastName, email, oldImageUrl, isOldImageRemoved } = validated.data;
   let imageUrl = oldImageUrl || null;
 
   // upload new image to S3 and get the new URL
@@ -153,10 +81,10 @@ export async function updateCustomer(id: string, isOldImageRemoved: boolean, pre
   if (hasNewImage) {
     try {
       const uploadResult = await uploadImageToS3(imageFile);
-      imageUrl = uploadResult.url || null;
-      if (!uploadResult.success || !imageUrl) {
+      if (!uploadResult.success || !uploadResult.url) {
         return { success: false, message: uploadResult.error || 'Failed to upload new image. Please try again.' };
       }
+      imageUrl = uploadResult.url;
       // remove old image from S3 after successful new upload
       if (isOldImageRemoved && oldImageUrl) {
         const oldImageKey = oldImageUrl?.split('/').pop() || '';

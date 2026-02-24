@@ -89,9 +89,8 @@ export async function updateProjectStatus(id: string, status: ProjectStatus) {
   }
 }
 
-const CreateProject = ProjectSchema.omit({ id: true, created_at: true });
-export async function createProject(data: z.infer<typeof CreateProject>) {
-  const validated = CreateProject.safeParse(data);
+export async function createProject(data: z.infer<typeof ProjectSchema>) {
+  const validated = ProjectSchema.safeParse(data);
   if (!validated.success) {
     return {
       success: false,
@@ -117,9 +116,8 @@ export async function createProject(data: z.infer<typeof CreateProject>) {
   return { success: true, message: 'Project created successfully!' };
 }
 
-const UpdateProject = ProjectSchema.omit({ id: true, created_at: true });
-export async function updateProject(id: string, data: z.infer<typeof UpdateProject>) {
-  const validated = UpdateProject.safeParse(data);
+export async function updateProject(id: string, data: z.infer<typeof ProjectSchema>) {
+  const validated = ProjectSchema.safeParse(data);
   if (!validated.success) {
     return {
       success: false,

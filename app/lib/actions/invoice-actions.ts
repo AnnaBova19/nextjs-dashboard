@@ -7,9 +7,8 @@ import { InvoiceSchema } from '@/app/dashboard/invoices/_lib/schemas';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-const CreateInvoice = InvoiceSchema.omit({ id: true, created_at: true });
-export async function createInvoice(data: z.infer<typeof CreateInvoice>) {
-  const validated = CreateInvoice.safeParse(data);
+export async function createInvoice(data: z.infer<typeof InvoiceSchema>) {
+  const validated = InvoiceSchema.safeParse(data);
   if (!validated.success) {
     return {
       success: false,
@@ -35,9 +34,8 @@ export async function createInvoice(data: z.infer<typeof CreateInvoice>) {
   return { success: true, message: 'Invoice created successfully!' };
 }
 
-const UpdateInvoice = InvoiceSchema.omit({ id: true, created_at: true });
-export async function updateInvoice(id: string, data: z.infer<typeof UpdateInvoice>) {
-  const validated = UpdateInvoice.safeParse(data);
+export async function updateInvoice(id: string, data: z.infer<typeof InvoiceSchema>) {
+  const validated = InvoiceSchema.safeParse(data);
   if (!validated.success) {
     return {
       success: false,

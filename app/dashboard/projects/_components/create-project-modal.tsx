@@ -38,13 +38,12 @@ export default function CreateProjectModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const CreateProject = ProjectSchema.omit({ id: true, created_at: true });
   const form = useForm({
-    resolver: zodResolver(CreateProject),
+    resolver: zodResolver(ProjectSchema),
     defaultValues: { name: "", description: "" },
   });
 
-  async function onSubmit(data: z.infer<typeof CreateProject>) {
+  async function onSubmit(data: z.infer<typeof ProjectSchema>) {
     const result = await createProject(data);
     if (result.success) {
       toast.success(result.message);
@@ -106,29 +105,29 @@ export default function CreateProjectModal({
               name="description"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel required htmlFor="create-project-form-description">
-                    Description
-                  </FieldLabel>
-                  <InputGroup>
-                    <InputGroupTextarea
-                      {...field}
-                      id="create-project-form-description"
-                      placeholder="Enter project description"
-                      rows={6}
-                      className="min-h-24 resize-none"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    <InputGroupAddon align="block-end">
-                      <InputGroupText className="tabular-nums">
-                        {field.value.length}/255 characters
-                      </InputGroupText>
-                    </InputGroupAddon>
-                  </InputGroup>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel required htmlFor="create-project-form-description">
+                  Description
+                </FieldLabel>
+                <InputGroup>
+                  <InputGroupTextarea
+                    {...field}
+                    id="create-project-form-description"
+                    placeholder="Enter project description"
+                    rows={6}
+                    className="min-h-24 resize-none"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <InputGroupAddon align="block-end">
+                    <InputGroupText className="tabular-nums">
+                      {field.value.length}/255 characters
+                    </InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
               )}
             />
           </FieldGroup>
