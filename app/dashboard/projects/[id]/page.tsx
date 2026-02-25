@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import TasksList from '../_components/tasks-list';
 import { fetchProjectTasksById } from '@/app/lib/actions/task-actions';
+import clsx from 'clsx';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -21,7 +22,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
+    <div className={clsx(
+        'flex flex-col gap-4 w-full',
+        !!tasks.length && 'h-full'
+      )}>
       <Link
         href='/dashboard/projects'
         className='text-sm text-gray-500'>
