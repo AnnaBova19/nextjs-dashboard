@@ -7,19 +7,13 @@ export const formatCurrency = (amount: number) => {
   });
 };
 
-export const formatDateToLocal = (
-  dateStr: string,
-  locale: string = 'en-US',
-) => {
-  const date = new Date(dateStr);
-  const options: Intl.DateTimeFormatOptions = {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  };
-  const formatter = new Intl.DateTimeFormat(locale, options);
-  return formatter.format(date);
-};
+export function dateToDbTimestamp(date: Date) {
+  const pad = (n: number, z = 2) => n.toString().padStart(z, "0");
+  // Adjust for timezone offset
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+  return `${localDate.getFullYear()}-${pad(localDate.getMonth()+1)}-${pad(localDate.getDate())} ` +
+         `${pad(localDate.getHours())}:${pad(localDate.getMinutes())}:${pad(localDate.getSeconds())}.000000`;
+}
 
 export const generateYAxis = (revenue: Revenue[]) => {
   // Calculate what labels we need to display on the y-axis

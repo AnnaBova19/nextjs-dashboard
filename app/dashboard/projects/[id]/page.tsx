@@ -21,7 +21,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full h-full">
       <Link
         href='/dashboard/projects'
         className='text-sm text-gray-500'>

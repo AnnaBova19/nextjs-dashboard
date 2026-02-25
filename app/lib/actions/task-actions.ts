@@ -5,6 +5,7 @@ import { Task } from '@/app/dashboard/projects/_lib/types';
 import { revalidatePath } from 'next/cache';
 import postgres from 'postgres';
 import { z } from 'zod';
+import { dateToDbTimestamp } from '../utils';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -33,11 +34,12 @@ export async function createTask(data: z.infer<typeof TaskSchema>) {
   }
 
   const { title, description, status, priority, due_date, project_id } = validated.data;
+  const dateTimestamp = dateToDbTimestamp(due_date);
 
   try {
     await sql`
       INSERT INTO tasks (title, description, status, priority, due_date, project_id)
-      VALUES (${title}, ${description}, ${status}, ${priority}, ${due_date}, ${project_id})
+      VALUES (${title}, ${description}, ${status}, ${priority}, ${dateTimestamp}, ${project_id})
     `;
   } catch (error) {
     console.error('Database Error:', error);
