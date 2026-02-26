@@ -21,9 +21,11 @@ export default function ProjectCard({
           </div>
           <ProjectAction project={project} onEdit={onEdit} />
         </div>
-        <div className="text-sm line-clamp-4">
+
+        <div className="text-sm text-gray-700 line-clamp-4">
           {project.description}
         </div>
+        
         <div className="text-xs text-gray-500">
           {project.status === ProjectStatus.ARCHIVED && project.archived_at ? (
             <>Archived: {format(new Date(project.archived_at), "MMM d, yyyy")}</>

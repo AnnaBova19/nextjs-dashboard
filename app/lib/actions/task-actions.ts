@@ -12,7 +12,19 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 export async function fetchProjectTasksById(id: string) {
   try {
     const data = await sql<Task[]>`
-      SELECT * FROM tasks
+      SELECT 
+        tasks.*,
+      CASE 
+        WHEN tasks.assignee_id IS NULL THEN '{}'::json
+        ELSE json_build_object(
+          'id', customers.id,
+          'first_name', customers.first_name,
+          'last_name', customers.last_name,
+          'image_url', customers.image_url
+        )
+      END AS assignee
+      FROM tasks
+      LEFT JOIN customers ON tasks.assignee_id = customers.id
       WHERE tasks.project_id = ${id};
     `;
 
@@ -33,13 +45,13 @@ export async function createTask(data: z.infer<typeof TaskSchema>) {
     };
   }
 
-  const { title, description, status, priority, due_date, project_id } = validated.data;
+  const { title, description, status, priority, due_date, project_id, assignee_id } = validated.data;
   const dateTimestamp = dateToDbTimestamp(due_date);
 
   try {
     await sql`
-      INSERT INTO tasks (title, description, status, priority, due_date, project_id)
-      VALUES (${title}, ${description}, ${status}, ${priority}, ${dateTimestamp}, ${project_id})
+      INSERT INTO tasks (title, description, status, priority, due_date, project_id, assignee_id)
+      VALUES (${title}, ${description}, ${status}, ${priority}, ${dateTimestamp}, ${project_id}, ${assignee_id ?? null})
     `;
   } catch (error) {
     console.error('Database Error:', error);

@@ -47,7 +47,7 @@ export default function EditInvoiceForm({
 
   const form = useForm({
     resolver: zodResolver(InvoiceSchema),
-    defaultValues: { customerId: invoice.customer_id, amount: invoice.amount, status: invoice.status },
+    defaultValues: { customer_id: invoice.customer_id, amount: invoice.amount, status: invoice.status },
   });
   
   async function onSubmit(data: z.infer<typeof InvoiceSchema>) {
@@ -73,7 +73,7 @@ export default function EditInvoiceForm({
       <form id="create-invoice-form" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
           <Controller
-            name="customerId"
+            name="customer_id"
             control={form.control}
             render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>

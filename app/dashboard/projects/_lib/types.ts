@@ -1,3 +1,4 @@
+import { CustomerField } from "../../customers/_lib/types";
 import { ProjectStatus, TaskPriority, TaskStatus } from "./enums";
 
 export type Project = {
@@ -20,4 +21,6 @@ export type Task = {
   due_date: number;
   created_at: number;
   archived_at?: number;
+  assignee_id?: string;
+  assignee?: CustomerField;
 };

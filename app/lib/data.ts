@@ -173,7 +173,8 @@ export async function fetchCustomers() {
       SELECT
         id,
         first_name,
-        last_name
+        last_name,
+        image_url
       FROM customers
       ORDER BY first_name ASC
     `;

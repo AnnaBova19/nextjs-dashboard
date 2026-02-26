@@ -40,13 +40,24 @@ import { createTask } from "@/app/lib/actions/task-actions";
 import { toast } from "sonner";
 import clsx from 'clsx';
 import TextareaAutosize from "react-textarea-autosize";
+import { CustomerField } from "../../customers/_lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import Image from 'next/image';
 
 export default function CreateTaskModal({
   projectId,
+  customers,
   open,
   onOpenChange,
 }: {
   projectId: string;
+  customers: CustomerField[],
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -59,6 +70,7 @@ export default function CreateTaskModal({
       priority: TaskPriority.MEDIUM,
       due_date: undefined,
       project_id: projectId,
+      assignee_id: "",
     },
   });
 
@@ -98,6 +110,38 @@ export default function CreateTaskModal({
         </DialogDescription>
         <form id="create-task-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
+            <Controller
+              name="status"
+              control={form.control}
+              render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="create-task-form-status">
+                  Status
+                </FieldLabel>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant={TASK_STATUS_MAP[field.value]?.variant || 'outline'} className="!w-fit justify-between">
+                      {TASK_STATUS_MAP[field.value]?.label || "Select Status"}
+                      <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-40" align="start">
+                    {taskStatusOptions.map((status) => (
+                      <DropdownMenuItem
+                        key={status.value}
+                        onSelect={() => field.onChange(status.value)}>
+                        {status.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+              )}
+            />
+
             <Controller
               name="title"
               control={form.control}
@@ -149,30 +193,43 @@ export default function CreateTaskModal({
             />
 
             <Controller
-              name="status"
+              name="assignee_id"
               control={form.control}
               render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-task-form-status">
-                  Status
+                <FieldLabel htmlFor="create-task-form-assigneeId">
+                  Assignee
                 </FieldLabel>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant={TASK_STATUS_MAP[field.value]?.variant || 'outline'} className="!w-fit justify-between">
-                      {TASK_STATUS_MAP[field.value]?.label || "Select Status"}
-                      <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-40" align="start">
-                    {taskStatusOptions.map((status) => (
-                      <DropdownMenuItem
-                        key={status.value}
-                        onSelect={() => field.onChange(status.value)}>
-                        {status.label}
-                      </DropdownMenuItem>
+                <Select
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger
+                    id="create-invoice-form-assigneeId"
+                    aria-invalid={fieldState.invalid}
+                    className="min-w-[120px]"
+                  >
+                    <SelectValue placeholder="Select assignee" />
+                  </SelectTrigger>
+                  <SelectContent position="item-aligned">
+                    {customers.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src={customer.image_url}
+                            alt={`${customer.first_name} ${customer.last_name}'s profile picture`}
+                            width={28}
+                            height={28}
+                            className="rounded-full object-cover"
+                            style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
+                          />
+                          <p>{customer.first_name} {customer.last_name}</p>
+                        </div>
+                      </SelectItem>
                     ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </SelectContent>
+                </Select>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -185,7 +242,7 @@ export default function CreateTaskModal({
               control={form.control}
               render={({ field, fieldState }) => {
               const selectedPriority = TASK_PRIORITY_MAP[field.value as TaskPriority];
-              const SelectedIcon = selectedPriority?.icon;
+              const SelectedPriorityIcon = selectedPriority?.icon;
               return (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="create-task-form-priority">
@@ -195,8 +252,8 @@ export default function CreateTaskModal({
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="!w-40 justify-between">
                         <span className="flex items-center gap-2">
-                          {SelectedIcon && (
-                            <SelectedIcon className={`h-4 w-4 ${selectedPriority.color}`} />
+                          {SelectedPriorityIcon && (
+                            <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
                           )}
                           {selectedPriority?.label || "Select Priority"}
                         </span>

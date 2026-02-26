@@ -28,3 +28,7 @@ export const generateYAxis = (revenue: Revenue[]) => {
 
   return { yAxisLabels, topLabel };
 };
+
+export function getInitials(first?: string, last?: string) {
+  return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase();
+}

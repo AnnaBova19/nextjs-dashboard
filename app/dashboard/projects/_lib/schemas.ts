@@ -21,10 +21,11 @@ export const TaskFormSchema = z.object({
   status: z.enum(['todo', 'in-progress', 'done'], {
     required_error: 'Please select a task status',
   }),
+  assignee_id: z.string().optional(),
   priority: z.enum(['lowest', 'low', 'medium', 'high', 'highest'], {
     required_error: 'Please select a task priority',
   }),
-  due_date: z.date({
+  due_date: z.coerce.date({
     required_error: "Date is required",
   }).min(today, { message: "Date must be in the future" }),
   created_at: z.string(),
