@@ -40,7 +40,7 @@ import { createTask } from "@/app/lib/actions/task-actions";
 import { toast } from "sonner";
 import clsx from 'clsx';
 import TextareaAutosize from "react-textarea-autosize";
-import { CustomerField } from "../../customers/_lib/types";
+import { MemberField } from "../../members/_lib/types";
 import {
   Select,
   SelectContent,
@@ -52,12 +52,12 @@ import Image from 'next/image';
 
 export default function CreateTaskModal({
   projectId,
-  customers,
+  members,
   open,
   onOpenChange,
 }: {
   projectId: string;
-  customers: CustomerField[],
+  members: MemberField[],
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -213,18 +213,18 @@ export default function CreateTaskModal({
                     <SelectValue placeholder="Select assignee" />
                   </SelectTrigger>
                   <SelectContent position="item-aligned">
-                    {customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
+                    {members.map((member) => (
+                      <SelectItem key={member.id} value={member.id}>
                         <div className="flex items-center gap-3">
                           <Image
-                            src={customer.image_url}
-                            alt={`${customer.first_name} ${customer.last_name}'s profile picture`}
+                            src={member.image_url}
+                            alt={`${member.first_name} ${member.last_name}'s profile picture`}
                             width={28}
                             height={28}
                             className="rounded-full object-cover"
                             style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
                           />
-                          <p>{customer.first_name} {customer.last_name}</p>
+                          <p>{member.first_name} {member.last_name}</p>
                         </div>
                       </SelectItem>
                     ))}

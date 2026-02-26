@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const InvoiceFormSchema = z.object({
   id: z.string(),
-  customer_id: z.string().min(1, "Please select a customer"),
+  member_id: z.string().min(1, "Please select a member"),
   amount: z.coerce
     .number({ 
       invalid_type_error: "Please enter a number",

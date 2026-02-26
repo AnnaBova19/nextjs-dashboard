@@ -3,13 +3,13 @@
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { deleteImageFromS3, uploadImageToS3 } from './s3-actions';
-import { CustomerForm } from '@/app/dashboard/customers/_lib/types';
-import { CreateCustomerSchema, UpdateCustomerSchema } from '@/app/dashboard/customers/_lib/schemas';
+import { MemberForm } from '@/app/dashboard/members/_lib/types';
+import { CreateMemberSchema, UpdateMemberSchema } from '@/app/dashboard/members/_lib/schemas';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-export async function createCustomer(formData: FormData) {
-  const validated = CreateCustomerSchema.safeParse({
+export async function createMember(formData: FormData) {
+  const validated = CreateMemberSchema.safeParse({
     imageFile: formData.get('imageFile'),
     firstName: formData.get('firstName'),
     lastName: formData.get('lastName'),
@@ -19,7 +19,7 @@ export async function createCustomer(formData: FormData) {
     return {
       success: false,
       errors: validated.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Customer.',
+      message: 'Missing Fields. Failed to Create Member.',
     };
   }
 
@@ -43,21 +43,21 @@ export async function createCustomer(formData: FormData) {
   // upload data to database
   try {
     await sql`
-      INSERT INTO customers (first_name, last_name, email, image_url)
+      INSERT INTO members (first_name, last_name, email, image_url)
       VALUES (${firstName}, ${lastName}, ${email}, ${imageUrl})
     `;
   } catch (error) {
     console.error('Database Error:', error);
-    return { success: false, message: 'Database Error: Failed to Create Customer.' };
+    return { success: false, message: 'Database Error: Failed to Create Member.' };
   }
 
-  revalidatePath('/dashboard/customers');
-  return { success: true, message: 'Customer created successfully!' };
+  revalidatePath('/dashboard/members');
+  return { success: true, message: 'Member created successfully!' };
 }
 
-export async function updateCustomer(id: string, formData: FormData) {
+export async function updateMember(id: string, formData: FormData) {
   const isRemoved = formData.get('isOldImageRemoved') === 'true';
-  const validated = UpdateCustomerSchema.safeParse({
+  const validated = UpdateMemberSchema.safeParse({
     imageFile: formData.get('imageFile'),
     firstName: formData.get('firstName'),
     lastName: formData.get('lastName'),
@@ -69,7 +69,7 @@ export async function updateCustomer(id: string, formData: FormData) {
     return {
       success: false,
       errors: validated.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Customer.',
+      message: 'Missing Fields. Failed to Update Member.',
     };
   }
 
@@ -112,36 +112,36 @@ export async function updateCustomer(id: string, formData: FormData) {
   // upload data to database
   try {
     await sql`
-      UPDATE customers
+      UPDATE members
       SET first_name = ${firstName}, last_name = ${lastName}, email = ${email}, image_url = ${imageUrl}
       WHERE id = ${id}
     `;
   } catch (error) {
     console.error('Database Error:', error);
-    return { success: false, message: 'Database Error: Failed to Update Customer.' };
+    return { success: false, message: 'Database Error: Failed to Update Member.' };
   }
 
-  revalidatePath('/dashboard/customers');
-  return { success: true, errors: {}, message: 'Customer updated successfully!' };
+  revalidatePath('/dashboard/members');
+  return { success: true, errors: {}, message: 'Member updated successfully!' };
 }
 
-export async function deleteCustomer(customer: CustomerForm) {
+export async function deleteMember(member: MemberForm) {
   try {
-    await sql`DELETE FROM customers WHERE id = ${customer.id}`;
-    // If the customer has an associated image, delete it from S3
-    if (customer?.image_url) {
+    await sql`DELETE FROM members WHERE id = ${member.id}`;
+    // If the member has an associated image, delete it from S3
+    if (member?.image_url) {
       try {
-        const imageKey = customer.image_url.split('/').pop(); // Extract the file name from the URL
+        const imageKey = member.image_url.split('/').pop(); // Extract the file name from the URL
         await deleteImageFromS3(imageKey || '');
       } catch (error) {
         console.error('S3 Deletion Error:', error);
-        throw new Error('Failed to delete customer image from S3.');
+        throw new Error('Failed to delete member image from S3.');
       }
     }
 
-    revalidatePath('/dashboard/customers');
+    revalidatePath('/dashboard/members');
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to delete customer.');
+    throw new Error('Failed to delete member.');
   }
 }

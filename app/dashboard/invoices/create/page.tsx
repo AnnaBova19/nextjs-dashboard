@@ -1,5 +1,5 @@
 import CreateInvoiceForm from '@/app/dashboard/invoices/_components/create-invoice';
-import { fetchCustomers } from '@/app/lib/data';
+import { fetchMembers } from '@/app/lib/data';
 import { Metadata } from 'next';
 import {
   Breadcrumb,
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
  
 export default async function Page() {
-  const customers = await fetchCustomers();
+  const members = await fetchMembers();
  
   return (
     <main>
@@ -35,7 +35,7 @@ export default async function Page() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <CreateInvoiceForm customers={customers} />
+      <CreateInvoiceForm members={members} />
     </main>
   );
 }

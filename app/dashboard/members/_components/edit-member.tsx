@@ -1,9 +1,10 @@
 'use client';
 
-import { createCustomer } from "@/app/lib/actions/customer-actions";
+import { updateMember } from "@/app/lib/actions/member-actions";
+import { MemberForm } from "@/app/dashboard/members/_lib/types";
 import Link from "next/link";
-import ImageUploader from "@/app/dashboard/customers/_components/image-uploader";
 import { Button, buttonVariants } from "@/components/ui/button";
+import ImageUploader from "@/app/dashboard/members/_components/image-uploader";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Controller, useForm } from "react-hook-form";
@@ -16,17 +17,28 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { CreateCustomerSchema } from "../_lib/schemas";
+import { UpdateMemberSchema } from "../_lib/schemas";
 
-export default function CreateCustomerForm() {
+export default function EditMemberForm({
+  member
+}: {
+  member: MemberForm;
+}) {
   const router = useRouter();
 
   const form = useForm({
-    resolver: zodResolver(CreateCustomerSchema),
-    defaultValues: { imageFile: undefined, firstName: "", lastName: "", email: "" },
+    resolver: zodResolver(UpdateMemberSchema),
+    defaultValues: {
+      imageFile: undefined,
+      firstName: member.first_name,
+      lastName: member.last_name,
+      email: member.email,
+      oldImageUrl: member.image_url,
+      isOldImageRemoved: false,
+    },
   });
 
-  async function onSubmit(data: z.infer<typeof CreateCustomerSchema>) {
+  async function onSubmit(data: z.infer<typeof UpdateMemberSchema>) {
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
@@ -38,10 +50,10 @@ export default function CreateCustomerForm() {
       formData.append('imageFile', data.imageFile);
     }
 
-    const result = await createCustomer(formData);
+    const result = await updateMember(member.id, formData);
     if (result.success) {
       toast.success(result.message);
-      router.push('/dashboard/customers');
+      router.push('/dashboard/members');
     } else {
       toast.error(result.message);
       if (result.errors) {
@@ -57,7 +69,7 @@ export default function CreateCustomerForm() {
 
   return (
     <div className="rounded-md border border-gray-200 p-4 md:p-6">
-      <form id="create-customer-form" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="update-member-form" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
           <Controller
             name="imageFile"
@@ -66,10 +78,16 @@ export default function CreateCustomerForm() {
             <ImageUploader 
               label="Upload Image"
               required
+              imageUrl={member.image_url}
               value={field.value}
-              onChange={field.onChange}
-              onRemove={() => {}}
               error={fieldState.error?.message}
+              onChange={(file) => {
+                field.onChange(file);
+              }}
+              onRemove={() => {
+                form.setValue("isOldImageRemoved", true, { shouldValidate: true });
+                field.onChange(null);
+              }}
             />
             )}
           />
@@ -79,14 +97,14 @@ export default function CreateCustomerForm() {
             control={form.control}
             render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel required htmlFor="create-customer-form-firstName">
+              <FieldLabel required htmlFor="update-member-form-firstName">
                 First Name
               </FieldLabel>
               <Input
                 {...field}
-                id="create-customer-form-firstName"
+                id="update-member-form-firstName"
                 aria-invalid={fieldState.invalid}
-                placeholder="Enter customer first name"
+                placeholder="Enter member first name"
                 autoComplete="off"
               />
               {fieldState.invalid && (
@@ -101,14 +119,14 @@ export default function CreateCustomerForm() {
             control={form.control}
             render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel required htmlFor="create-customer-form-lastName">
+              <FieldLabel required htmlFor="update-member-form-lastName">
                 Last Name
               </FieldLabel>
               <Input
                 {...field}
-                id="create-customer-form-lastName"
+                id="update-member-form-lastName"
                 aria-invalid={fieldState.invalid}
-                placeholder="Enter customer last name"
+                placeholder="Enter member last name"
                 autoComplete="off"
               />
               {fieldState.invalid && (
@@ -124,14 +142,14 @@ export default function CreateCustomerForm() {
             control={form.control}
             render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel required htmlFor="create-customer-form-email">
+              <FieldLabel required htmlFor="update-member-form-email">
                 Email
               </FieldLabel>
               <Input
                 {...field}
-                id="create-customer-form-email"
+                id="update-member-form-email"
                 aria-invalid={fieldState.invalid}
-                placeholder="Enter customer email"
+                placeholder="Enter member email"
                 autoComplete="off"
               />
               {fieldState.invalid && (
@@ -144,7 +162,7 @@ export default function CreateCustomerForm() {
       </form>
       <Field orientation="horizontal" className="justify-end mt-6">
         <Link
-          href="/dashboard/customers"
+          href="/dashboard/members"
           className={buttonVariants({ variant: "outline" })}
         >
           Cancel
@@ -152,7 +170,7 @@ export default function CreateCustomerForm() {
         <Button type="button" variant="outline" onClick={() => form.reset()}>
           Reset
         </Button>
-        <Button type="submit" form="create-customer-form" disabled={form.formState.isSubmitting}>
+        <Button type="submit" form="update-member-form" disabled={form.formState.isSubmitting}>
           Save Changes
         </Button>
       </Field>

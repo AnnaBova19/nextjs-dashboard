@@ -1,5 +1,5 @@
 import EditInvoiceForm from '@/app/dashboard/invoices/_components/edit-invoice';
-import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
+import { fetchInvoiceById, fetchMembers } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import {
@@ -19,9 +19,9 @@ export const metadata: Metadata = {
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
-  const [invoice, customers] = await Promise.all([
+  const [invoice, members] = await Promise.all([
     fetchInvoiceById(id),
-    fetchCustomers(),
+    fetchMembers(),
   ]);
 
   if (!invoice) {
@@ -45,7 +45,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <EditInvoiceForm invoice={invoice} customers={customers} />
+      <EditInvoiceForm invoice={invoice} members={members} />
     </main>
   );
 }

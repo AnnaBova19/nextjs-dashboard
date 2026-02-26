@@ -17,13 +17,13 @@ export async function createInvoice(data: z.infer<typeof InvoiceSchema>) {
     };
   }
 
-  const { customer_id, amount, status } = validated.data;
+  const { member_id, amount, status } = validated.data;
   const amountInCents = Math.round(amount * 100); // convert the amount into cents
 
   try {
     await sql`
-      INSERT INTO invoices (customer_id, amount, status)
-      VALUES (${customer_id}, ${amountInCents}, ${status})
+      INSERT INTO invoices (member_id, amount, status)
+      VALUES (${member_id}, ${amountInCents}, ${status})
     `;
   } catch (error) {
     console.error('Database Error:', error);
@@ -44,13 +44,13 @@ export async function updateInvoice(id: string, data: z.infer<typeof InvoiceSche
     };
   }
 
-  const { customer_id, amount, status } = validated.data;
+  const { member_id, amount, status } = validated.data;
   const amountInCents = amount * 100; // convert the amount into cents
 
   try {
     await sql`
       UPDATE invoices
-      SET customer_id = ${customer_id}, amount = ${amountInCents}, status = ${status}, updated_at = NOW()
+      SET member_id = ${member_id}, amount = ${amountInCents}, status = ${status}, updated_at = NOW()
       WHERE id = ${id}
     `;
   } catch (error) {

@@ -3,7 +3,7 @@ import { z } from "zod";
 export const MAX_FILE_SIZE = 1000000; // 1MB
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-export const CreateCustomerFormSchema = z.object({
+export const CreateMemberFormSchema = z.object({
   id: z.string(),
   imageFile: z
     .any()
@@ -17,9 +17,9 @@ export const CreateCustomerFormSchema = z.object({
   lastName: z.string().min(1, { message: "Last name is required" }).trim(),
   email: z.string().email(),
 });
-export const CreateCustomerSchema = CreateCustomerFormSchema.omit({ id: true });
+export const CreateMemberSchema = CreateMemberFormSchema.omit({ id: true });
 
-export const UpdateCustomerFormSchema = z.object({
+export const UpdateMemberFormSchema = z.object({
   id: z.string(),
   imageFile: z.any().optional(),
   firstName: z.string().min(1, { message: "First name is required" }).trim(),
@@ -28,7 +28,7 @@ export const UpdateCustomerFormSchema = z.object({
   oldImageUrl: z.string().optional(), // Add oldImageUrl to the schema
   isOldImageRemoved: z.boolean(),
 });
-export const UpdateCustomerSchema = UpdateCustomerFormSchema.omit({ id: true })
+export const UpdateMemberSchema = UpdateMemberFormSchema.omit({ id: true })
   .superRefine((data, ctx) => {
     if (data.isOldImageRemoved && (!data.imageFile || !(data.imageFile instanceof File) || data.imageFile.size === 0)) {
       ctx.addIssue({

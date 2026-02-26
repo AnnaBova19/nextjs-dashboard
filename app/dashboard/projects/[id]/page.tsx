@@ -8,16 +8,16 @@ import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import TasksList from '../_components/tasks-list';
 import { fetchProjectTasksById } from '@/app/lib/actions/task-actions';
 import clsx from 'clsx';
-import { fetchCustomers } from '@/app/lib/data';
+import { fetchMembers } from '@/app/lib/data';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [project, tasks, customers] = await Promise.all([
+  const [project, tasks, members] = await Promise.all([
     fetchProjectById(id),
     fetchProjectTasksById(id),
-    fetchCustomers(),
+    fetchMembers(),
   ]);
   if (!project) {
     notFound();
@@ -42,7 +42,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       </div>
       <Status status={project.status}/>
       <div>{project.description}</div>
-      <TasksList projectId={id} tasks={tasks} customers={customers}/>
+      <TasksList projectId={id} tasks={tasks} members={members}/>
     </div>
   );
 }

@@ -63,7 +63,7 @@ export default async function InvoicesTable({ invoices }: { invoices: Array<Invo
             <Table className="hidden min-w-full text-gray-900 md:table">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Customer</TableHead>
+                  <TableHead>Member</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Date</TableHead>

@@ -2,7 +2,7 @@ import { InvoiceStatus } from "./enums";
 
 export type InvoicesTableType = {
   id: string;
-  customer_id: string;
+  member_id: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -15,7 +15,7 @@ export type InvoicesTableType = {
 
 export type InvoiceForm = {
   id: string;
-  customer_id: string;
+  member_id: string;
   amount: number;
   status: InvoiceStatus;
 };

@@ -17,14 +17,14 @@ export async function fetchProjectTasksById(id: string) {
       CASE 
         WHEN tasks.assignee_id IS NULL THEN '{}'::json
         ELSE json_build_object(
-          'id', customers.id,
-          'first_name', customers.first_name,
-          'last_name', customers.last_name,
-          'image_url', customers.image_url
+          'id', members.id,
+          'first_name', members.first_name,
+          'last_name', members.last_name,
+          'image_url', members.image_url
         )
       END AS assignee
       FROM tasks
-      LEFT JOIN customers ON tasks.assignee_id = customers.id
+      LEFT JOIN members ON tasks.assignee_id = members.id
       WHERE tasks.project_id = ${id};
     `;
 

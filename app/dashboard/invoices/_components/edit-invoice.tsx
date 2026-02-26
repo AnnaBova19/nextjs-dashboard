@@ -11,7 +11,7 @@ import { updateInvoice } from '@/app/lib/actions/invoice-actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { InvoiceForm } from '@/app/dashboard/invoices/_lib/types';
-import { CustomerField } from '@/app/dashboard/customers/_lib/types';
+import { MemberField } from '@/app/dashboard/members/_lib/types';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
@@ -38,16 +38,16 @@ import { InvoiceSchema } from '../_lib/schemas';
 
 export default function EditInvoiceForm({
   invoice,
-  customers,
+  members,
 }: {
   invoice: InvoiceForm;
-  customers: CustomerField[];
+  members: MemberField[];
 }) {
   const router = useRouter();
 
   const form = useForm({
     resolver: zodResolver(InvoiceSchema),
-    defaultValues: { customer_id: invoice.customer_id, amount: invoice.amount, status: invoice.status },
+    defaultValues: { member_id: invoice.member_id, amount: invoice.amount, status: invoice.status },
   });
   
   async function onSubmit(data: z.infer<typeof InvoiceSchema>) {
@@ -73,12 +73,12 @@ export default function EditInvoiceForm({
       <form id="create-invoice-form" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
           <Controller
-            name="customer_id"
+            name="member_id"
             control={form.control}
             render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel required htmlFor="create-invoice-form-customerId">
-                Choose customer
+              <FieldLabel required htmlFor="create-invoice-form-memberId">
+                Choose member
               </FieldLabel>
               <Select
                 name={field.name}
@@ -86,16 +86,16 @@ export default function EditInvoiceForm({
                 onValueChange={field.onChange}
               >
                 <SelectTrigger
-                  id="create-invoice-form-customerId"
+                  id="create-invoice-form-memberId"
                   aria-invalid={fieldState.invalid}
                   className="min-w-[120px]"
                 >
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent position="item-aligned">
-                  {customers.map((customer) => (
-                    <SelectItem key={customer.id} value={customer.id}>
-                      {customer.first_name} {customer.last_name}
+                  {members.map((member) => (
+                    <SelectItem key={member.id} value={member.id}>
+                      {member.first_name} {member.last_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

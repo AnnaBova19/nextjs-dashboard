@@ -9,16 +9,16 @@ import Search from "@/app/ui/shared/search";
 import { CreateTask } from "./buttons";
 import { TaskStatus } from "../_lib/enums";
 import { TaskCard } from "./task-card";
-import { CustomerField } from "../../customers/_lib/types";
+import { MemberField } from "../../members/_lib/types";
 
 export default function TasksList({
   projectId,
   tasks,
-  customers,
+  members,
 }: {
   projectId: string;
   tasks: Task[];
-  customers: CustomerField[];
+  members: MemberField[];
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -80,7 +80,7 @@ export default function TasksList({
 
       <CreateTaskModal
         projectId={projectId}
-        customers={customers}
+        members={members}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
       />

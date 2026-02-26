@@ -1,4 +1,4 @@
-import CreateCustomerForm from '@/app/dashboard/customers/_components/create-customer';
+import CreateMemberForm from '@/app/dashboard/members/_components/create-member';
 import { Metadata } from 'next';
 import {
   Breadcrumb,
@@ -11,7 +11,7 @@ import {
 import Link from 'next/link';
  
 export const metadata: Metadata = {
-  title: 'Create Customer',
+  title: 'Create Member',
 };
 
 export default function Page() {
@@ -21,18 +21,18 @@ export default function Page() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard/customers">Customers</Link>
+              <Link href="/dashboard/members">Members</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage>
-              Create Customer
+              Create Member
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <CreateCustomerForm />
+      <CreateMemberForm />
     </main>
   );
 }

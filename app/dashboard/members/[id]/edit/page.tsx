@@ -1,7 +1,7 @@
-import { fetchCustomerById } from '@/app/lib/data';
+import { fetchMemberById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import EditCustomerForm from '@/app/dashboard/customers/_components/edit-customer';
+import EditMemberForm from '@/app/dashboard/members/_components/edit-member';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,15 +13,15 @@ import {
 import Link from 'next/link';
  
 export const metadata: Metadata = {
-  title: 'Edit Customer',
+  title: 'Edit Member',
 };
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const customer = await fetchCustomerById(id)
-  if (!customer) {
+  const member = await fetchMemberById(id)
+  if (!member) {
     notFound();
   }
 
@@ -31,18 +31,18 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard/customers">Customers</Link>
+              <Link href="/dashboard/members">Members</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage>
-              Edit Customer
+              Edit Member
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <EditCustomerForm customer={customer} />
+      <EditMemberForm member={member} />
     </main>
   );
 }
