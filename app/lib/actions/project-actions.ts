@@ -6,6 +6,7 @@ import postgres from 'postgres';
 import { Project } from "@/app/dashboard/projects/_lib/types";
 import { ProjectStatus } from '@/app/dashboard/projects/_lib/enums';
 import { ProjectSchema } from '@/app/dashboard/projects/_lib/schemas';
+import { cache } from 'react';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -72,6 +73,10 @@ export async function fetchProjectById(id: string) {
     throw new Error('Failed to fetch project.');
   }
 }
+
+export const getProjectById = cache(async (id: string) => {
+  return await fetchProjectById(id);
+});
 
 export async function updateProjectStatus(id: string, status: ProjectStatus) {
   try {

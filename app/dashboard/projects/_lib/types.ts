@@ -23,4 +23,5 @@ export type Task = {
   archived_at?: number;
   assignee_id?: string;
   assignee?: MemberField;
+  position: number;
 };
