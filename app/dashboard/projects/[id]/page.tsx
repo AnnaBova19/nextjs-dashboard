@@ -60,7 +60,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       </div>
       <Status status={project.status}/>
       <div>{project.description}</div>
-      <TasksBoard projectId={id} tasksByStatus={tasksByStatus} members={members}/>
+      <TasksBoard
+        key={JSON.stringify(tasksByStatus)}
+        projectId={id}
+        tasksByStatus={tasksByStatus}
+        members={members}/>
     </div>
   );
 }

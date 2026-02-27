@@ -21,7 +21,11 @@ export const TaskFormSchema = z.object({
   status: z.enum(['todo', 'in-progress', 'done'], {
     required_error: 'Please select a task status',
   }),
-  assignee_id: z.string().optional(),
+  assignee_id: z.string().optional().nullable().or(z.literal(''))
+    .transform((val) => (val === '' || val === undefined ? null : val))
+    .refine((val) => val === null || z.string().uuid().safeParse(val).success, {
+      message: "Invalid UUID format",
+    }),
   priority: z.enum(['lowest', 'low', 'medium', 'high', 'highest'], {
     required_error: 'Please select a task priority',
   }),

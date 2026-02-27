@@ -11,41 +11,29 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function fetchProjectTasksByIdGrouped(id: string) {
   try {
-    const data = await sql<{ status: string; tasks: Task[] }[]>`
+    const data = await sql<Task[]>`
       SELECT 
-        tasks.status,
-        json_agg(
-          to_json(tasks)::jsonb || (
-            CASE 
-              WHEN tasks.assignee_id IS NULL THEN '{}'::jsonb
-              ELSE json_build_object(
-                'assignee', json_build_object(
-                  'id', members.id,
-                  'first_name', members.first_name,
-                  'last_name', members.last_name,
-                  'image_url', members.image_url
-                )
-              )::jsonb
-            END
-          ) ORDER BY tasks.position
-        ) AS tasks
+        tasks.*,
+      CASE 
+        WHEN tasks.assignee_id IS NULL THEN '{}'::json
+        ELSE json_build_object(
+          'id', members.id,
+          'first_name', members.first_name,
+          'last_name', members.last_name,
+          'image_url', members.image_url
+        )
+      END AS assignee
       FROM tasks
       LEFT JOIN members ON tasks.assignee_id = members.id
       WHERE tasks.project_id = ${id}
-      GROUP BY tasks.status
-      ORDER BY 
-        CASE tasks.status
-          WHEN 'todo' THEN 1
-          WHEN 'in-progress' THEN 2
-          WHEN 'done' THEN 3
-        END;
+      ORDER BY tasks.position ASC
     `;
 
-    const defaultStatuses = { todo: [], 'in-progress': [], done: [] };
-    return data.reduce((acc, { status, tasks }) => {
-      acc[status] = tasks;
+    const grouped = { todo: [], 'in-progress': [], done: [] };
+    return data.reduce((acc, task) => {
+      acc[task.status]?.push(task);
       return acc;
-    }, { ...defaultStatuses } as Record<string, Task[]>);
+    }, grouped as Record<string, Task[]>);
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch project tasks.');
@@ -83,9 +71,20 @@ export async function createTask(data: z.infer<typeof TaskSchema>) {
     `;
   } catch (error) {
     console.error('Database Error:', error);
-    return { success: false, message: 'Database Error: Failed to Create Invoice.' };
+    return { success: false, message: 'Database Error: Failed to Create Task.' };
   }
 
   revalidatePath(`/dashboard/projects/${project_id}`);
   return { success: true, message: 'Task created successfully!' };
+}
+
+
+export async function deleteTask(id: string, project_id: string) {
+  try {
+    await sql`DELETE FROM tasks WHERE id = ${id}`;
+    revalidatePath(`/dashboard/projects/${project_id}`);
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to delete task.');
+  }
 }

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTransition } from 'react';
 import { toast } from 'sonner';
-import { Project } from '@/app/dashboard/projects/_lib/types';
+import { Project, Task } from '@/app/dashboard/projects/_lib/types';
 import { ProjectStatus } from '../_lib/enums';
 
 export function ProjectAction({
@@ -97,5 +97,47 @@ export function CreateTask({ onModalOpen }: { onModalOpen: () => void}) {
       <span className="hidden md:block">Create Task</span>{' '}
       <PlusIcon className="h-5 md:ml-4" />
     </Button>
+  );
+}
+
+export function TaskAction({
+  task,
+  onEdit,
+  onDeleteConfirm,
+}: {
+  task: Task;
+  onEdit: () => void;
+  onDeleteConfirm: () => void;
+}) {
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="w-[36px]"
+          onClick={(e) => e.stopPropagation()}>
+          <EllipsisVerticalIcon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+        >
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteConfirm();
+          }}
+        >
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

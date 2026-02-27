@@ -3,7 +3,7 @@
 import { EmptyState } from "@/app/ui/shared/empty-state";
 import { Task } from "../_lib/types";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CreateTaskModal from "./create-task-modal";
 import Search from "@/app/ui/shared/search";
 import { CreateTask } from "./buttons";
@@ -14,7 +14,6 @@ import {
   DndContext,
   DragOverlay,
   closestCorners,
-  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
@@ -24,7 +23,12 @@ import {
   DragEndEvent,
   rectIntersection
 } from "@dnd-kit/core";
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
+import { restrictToWindowEdges } from "@dnd-kit/modifiers";
+import { TaskCard } from "./task-card";
+import { ConfirmationDialog } from "@/app/ui/shared/confirmation-dialog";
+import { deleteTask } from "@/app/lib/actions/task-actions";
+import { toast } from "sonner";
 
 const columns = [
   { status: TaskStatus.TODO, title: "To Do" },
@@ -49,21 +53,30 @@ export default function TasksBoard({
   tasksByStatus: Record<'todo' | 'in-progress' | 'done', Task[]>;
   members: MemberField[];
 }) {
-  const [tasksByStatus, setTasksByStatus] = useState<Record<string, Task[]>>(initialTasksByStatus);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [tasksByStatus, setTasksByStatus] = useState<Record<string, Task[]>>(initialTasksByStatus);
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null); 
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 7,
+      },
     })
   );
+
+  const activeTask = useMemo(() => {
+    if (!activeId) return null;
+    return Object.values(tasksByStatus).flat().find((t) => t.id === activeId);
+  }, [activeId, tasksByStatus]);
 
   if (!isMounted) {
     return <div className="flex-auto flex gap-4 w-full h-[500px] bg-gray-50/50 animate-pulse" />;
@@ -71,16 +84,38 @@ export default function TasksBoard({
 
   const hasTasks = Object.values(tasksByStatus || {}).some(arr => arr.length > 0);
 
-  function findContainer(id: any) {
-    if (id in tasksByStatus) {
-      return id;
-    }
+  const handleEdit = (task: Task) => {
+    setTaskToEdit(task);
+  };
 
-    return Object.keys(tasksByStatus).find((key) => {
-      const statusKey = key as keyof typeof tasksByStatus;
-      return tasksByStatus[statusKey].some((task) => task.id === id);
-    });
-  }
+  const confirmDelete = (task: Task) => {
+    setTaskToDelete(task);
+  };
+
+  const handleDeleteTask = async () => {
+    if (!taskToDelete) return;
+
+    const status = taskToDelete.status;
+    setTasksByStatus((prev) => ({
+      ...prev,
+      [status]: prev[status].filter((t) => t.id !== taskToDelete.id),
+    }));
+    setTaskToDelete(null);
+
+    try {
+      await deleteTask(taskToDelete.id, projectId);
+      toast.success("Task was successfully deleted");
+    } catch (error) {
+      toast.error("Failed to delete task");
+    }
+  };
+
+  const findContainer = (id: UniqueIdentifier) => {
+    if (id in tasksByStatus) return id;
+    return Object.keys(tasksByStatus).find((key) => 
+      tasksByStatus[key].some((task) => task.id === id)
+    );
+  };
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -91,7 +126,6 @@ export default function TasksBoard({
 
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
-    const draggingRect = active.rect.current.translated;
     
     if (!over) return;
 
@@ -114,16 +148,9 @@ export default function TasksBoard({
 
       let newIndex;
       if (overId in prev) {
-        newIndex = overItems.length + 1;
+        newIndex = overItems.length;
       } else {
-        const isBelowLastItem =
-          overIndex === overItems.length - 1 &&
-          draggingRect &&
-          over.rect &&
-          draggingRect.top > over.rect.top + over.rect.height;
-
-        const modifier = isBelowLastItem ? 1 : 0;
-        newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
+        newIndex = overIndex >= 0 ? overIndex : overItems.length;
       }
 
       return {
@@ -180,19 +207,20 @@ export default function TasksBoard({
           description="Looks like you haven't added any task to this project yet."
           icon={<ClipboardDocumentListIcon />}
           ctaText="Create Task"
-          ctaAction={() => setIsModalOpen(true)}
+          ctaAction={() => setIsCreateTaskOpen(true)}
         />
       ) : (
         <>
           <div className="mt-4 flex items-center justify-between gap-2 md:mt-6">
             <Search placeholder="Search tasks..." />
-            <CreateTask onModalOpen={() => setIsModalOpen(true)} />
+            <CreateTask onModalOpen={() => setIsCreateTaskOpen(true)} />
           </div>
 
-          <div className="flex-auto flex gap-4 w-full overflow-x-auto">
+          <div className="flex-auto flex gap-4 w-full overflow-x-auto overflow-y-hidden">
             <DndContext id="tasks-board"
               sensors={sensors}
-              collisionDetection={customCollisionStrategy}
+              collisionDetection={closestCorners}
+              modifiers={[restrictToWindowEdges]}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
@@ -205,14 +233,23 @@ export default function TasksBoard({
                     columnStatus={col.status}
                     columnTitle={col.title}
                     tasks={columnTasks}
+                    onEdit={handleEdit}
+                    onDeleteConfirm={confirmDelete}
                   />
                 );
               })}
-              {/* <DragOverlay>
-                {activeId ? (
-                  <div></div>
+              <DragOverlay>
+                {activeTask ? (
+                  <div className="shadow-xl ring-1 ring-black/5 rounded-lg rotate-2 cursor-grabbing">
+                    <TaskCard 
+                      task={activeTask} 
+                      showActions={false}
+                      onEdit={() => {}} 
+                      onDeleteConfirm={() => {}} 
+                    />
+                  </div>
                 ) : null}
-              </DragOverlay> */}
+              </DragOverlay>
             </DndContext>
           </div>
         </>
@@ -221,8 +258,16 @@ export default function TasksBoard({
       <CreateTaskModal
         projectId={projectId}
         members={members}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        open={isCreateTaskOpen}
+        onOpenChange={setIsCreateTaskOpen}
+      />
+
+      <ConfirmationDialog
+        isOpen={!!taskToDelete}
+        title="Are you absolutely sure?"
+        description={`This action cannot be undone. This will permanently delete the task ${taskToDelete?.title}.`}
+        onClose={() => setTaskToDelete(null)}
+        onConfirm={handleDeleteTask}
       />
     </>
   );

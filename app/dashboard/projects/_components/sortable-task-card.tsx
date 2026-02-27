@@ -7,8 +7,12 @@ import { TaskCard } from "./task-card";
 
 export default function SortableTaskCard({
   task,
+  onEdit,
+  onDeleteConfirm,
 }: {
   task: Task;
+  onEdit: (task: Task) => void;
+  onDeleteConfirm: (task: Task) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: task.id,
@@ -21,7 +25,7 @@ export default function SortableTaskCard({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} suppressHydrationWarning>
-      <TaskCard task={task} />
+      <TaskCard task={task} onEdit={onEdit} onDeleteConfirm={onDeleteConfirm} />
     </div>
   );
 }

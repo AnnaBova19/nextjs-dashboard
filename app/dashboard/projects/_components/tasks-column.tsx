@@ -10,17 +10,21 @@ export default function TasksColumn({
   columnStatus,
   columnTitle,
   tasks,
+  onEdit,
+  onDeleteConfirm,
 }: {
   columnStatus: TaskStatus;
   columnTitle: string;
-  tasks: Task[]
+  tasks: Task[];
+  onEdit: (task: Task) => void;
+  onDeleteConfirm: (task: Task) => void;
 }) {
   const { setNodeRef } = useDroppable({
     id: columnStatus
   });
 
   return (
-    <div className="flex-1 w-auto min-w-[280px] rounded-md bg-muted/40 px-4 py-2">
+    <div className="flex-1 w-auto min-w-[280px] rounded-md bg-muted/40 px-4 py-2 overflow-x-hidden overflow-y-auto">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3 font-semibold uppercase text-muted-foreground">
           <span className="text-sm">{columnTitle}</span>
@@ -44,7 +48,11 @@ export default function TasksColumn({
             ) : (
               <>
                 {tasks.map((task) => (
-                  <SortableTaskCard key={task.id} task={task}/>
+                  <SortableTaskCard
+                    key={task.id}
+                    task={task}
+                    onEdit={() => onEdit(task)}
+                    onDeleteConfirm={() => onDeleteConfirm(task)} />
                 ))}
               </>
             )}

@@ -12,11 +12,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
+import { TaskAction } from "./buttons";
 
 export function TaskCard({
   task,
+  showActions = true,
+  onEdit,
+  onDeleteConfirm,
 }: {
   task: Task;
+  showActions?: boolean;
+  onEdit: (task: Task) => void;
+  onDeleteConfirm: (task: Task) => void;
 }) {
   const selectedPriority = TASK_PRIORITY_MAP[task.priority as TaskPriority];
   const SelectedPriorityIcon = selectedPriority?.icon;
@@ -27,6 +34,12 @@ export function TaskCard({
         <div className="text-sm font-semibold">
           {task.title}
         </div>
+        {showActions && (
+          <TaskAction
+            task={task}
+            onEdit={() => onEdit(task)}
+            onDeleteConfirm={() => onDeleteConfirm(task)} />
+        )}
       </div>
 
       <div className="text-sm text-gray-700 line-clamp-2">
