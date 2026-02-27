@@ -78,6 +78,20 @@ export async function createTask(data: z.infer<typeof TaskSchema>) {
   return { success: true, message: 'Task created successfully!' };
 }
 
+export async function updateTask(data: z.infer<typeof TaskSchema>) {
+  const validated = TaskSchema.safeParse(data);
+  if (!validated.success) {
+    return {
+      success: false,
+      errors: validated.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Task.',
+    };
+  }
+
+  // TODO
+  // revalidatePath(`/dashboard/projects/${project_id}`);
+  return { success: true, message: 'Task updated successfully!' };
+}
 
 export async function deleteTask(id: string, project_id: string) {
   try {

@@ -202,7 +202,7 @@ export default function CreateTaskModal({
                 </FieldLabel>
                 <Select
                   name={field.name}
-                  value={field.value}
+                  value={field.value ?? undefined}
                   onValueChange={field.onChange}
                 >
                   <SelectTrigger

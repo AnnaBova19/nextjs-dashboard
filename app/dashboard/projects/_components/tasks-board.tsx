@@ -29,6 +29,7 @@ import { TaskCard } from "./task-card";
 import { ConfirmationDialog } from "@/app/ui/shared/confirmation-dialog";
 import { deleteTask } from "@/app/lib/actions/task-actions";
 import { toast } from "sonner";
+import EditTaskModal from "./edit-task.modal";
 
 const columns = [
   { status: TaskStatus.TODO, title: "To Do" },
@@ -56,7 +57,6 @@ export default function TasksBoard({
   const [isMounted, setIsMounted] = useState(false);
   const [tasksByStatus, setTasksByStatus] = useState<Record<string, Task[]>>(initialTasksByStatus);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
-  const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null); 
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -261,6 +261,16 @@ export default function TasksBoard({
         open={isCreateTaskOpen}
         onOpenChange={setIsCreateTaskOpen}
       />
+
+      {taskToEdit && (
+        <EditTaskModal
+          projectId={projectId}
+          task={taskToEdit}
+          members={members}
+          open={!!taskToEdit}
+          onOpenChange={() => setTaskToEdit(null)}
+        />
+      )}
 
       <ConfirmationDialog
         isOpen={!!taskToDelete}
