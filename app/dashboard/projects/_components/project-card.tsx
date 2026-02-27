@@ -22,6 +22,10 @@ export default function ProjectCard({
           <ProjectAction project={project} onEdit={onEdit} />
         </div>
 
+        <div className="w-fit bg-blue-300/20 rounded-sm px-2 py-1 font-medium text-xs text-blue-700">
+          {project.tasks_count} {project.tasks_count === 1 ? 'task' : 'tasks'}
+        </div>
+
         <div className="text-sm text-gray-700 line-clamp-4">
           {project.description}
         </div>

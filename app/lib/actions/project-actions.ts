@@ -16,7 +16,11 @@ export async function fetchFilteredProjects(query: string, currentPage: number, 
 
   try {
     const projects = await sql<Project[]>`
-      SELECT * FROM projects
+      SELECT 
+        projects.*, 
+        COUNT(tasks.id)::INT AS tasks_count
+      FROM projects
+      LEFT JOIN tasks ON tasks.project_id = projects.id
       WHERE
         projects.status = ${status}
         ${
@@ -27,6 +31,7 @@ export async function fetchFilteredProjects(query: string, currentPage: number, 
               )`
             : sql``
         }
+      GROUP BY projects.id
       ORDER BY projects.updated_at DESC
       LIMIT ${PROJECTS_ITEMS_PER_PAGE} OFFSET ${offset}
     `;

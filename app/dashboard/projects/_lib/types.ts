@@ -9,6 +9,7 @@ export type Project = {
   created_at: number;
   updated_at: number;
   archived_at?: number;
+  tasks_count: number;
 };
 
 export type Task = {
