@@ -6,10 +6,12 @@ import ProjectPageButtons from '../_components/project-page-buttons';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import TasksBoard from '../_components/tasks-board';
-import { fetchProjectTasksByIdGrouped } from '@/app/lib/actions/task-actions';
+import { fetchProjectTasksCount, fetchProjectTasksGrouped } from '@/app/lib/actions/task-actions';
 import clsx from 'clsx';
 import { fetchMembers } from '@/app/lib/data';
 import { Metadata } from 'next';
+import Search from '@/app/ui/shared/search';
+import { CreateTask } from '../_components/buttons';
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params;
@@ -26,25 +28,32 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   };
 }
 
-export default async function Page(props: { params: Promise<{ id: string }> }) {
+export default async function Page(props: {
+  params: Promise<{ id: string }>,
+  searchParams?: Promise<{
+    query?: string;
+  }>;
+}) {
   const params = await props.params;
   const id = params.id;
 
-  const [project, tasksByStatus, members] = await Promise.all([
+  const searchParams = await props.searchParams;
+  const query = searchParams?.query || '';
+
+  const [project, tasksByStatus, tasksCount, members] = await Promise.all([
     getProjectById(id),
-    fetchProjectTasksByIdGrouped(id),
+    fetchProjectTasksGrouped(id, query),
+    fetchProjectTasksCount(id),
     fetchMembers(),
   ]);
   if (!project) {
     notFound();
   }
 
-  const hasTasks = Object.values(tasksByStatus || {}).some(arr => arr.length > 0);
-
   return (
     <div className={clsx(
         'flex flex-col gap-4 w-full',
-        hasTasks && 'h-full'
+        tasksCount > 0 && 'h-full'
       )}>
       <Link
         href='/dashboard/projects'
@@ -54,14 +63,26 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           Back to Projects
         </div>
       </Link>
-      <div className="flex w-full justify-between items-center">
-        <h1 className={`${lusitana.className} text-2xl`}>{project.name}</h1>
+
+      <div className="flex w-full justify-between gap-3">
+        <div className='flex flex-col md:flex-row gap-3'>
+          <Status status={project.status}/>
+          <h1 className={`${lusitana.className} text-2xl`}>{project.name}</h1>
+        </div>
         <ProjectPageButtons project={project}/>
       </div>
-      <Status status={project.status}/>
       <div>{project.description}</div>
+
+      {tasksCount > 0 && (
+        <div className="flex items-center justify-between gap-2 mt-4">
+          <Search placeholder="Search tasks..." />
+          <CreateTask projectId={id} members={members} />
+        </div>
+      )}
+
       <TasksBoard
         key={JSON.stringify(tasksByStatus)}
+        hasTasks={tasksCount > 0}
         projectId={id}
         tasksByStatus={tasksByStatus}
         members={members}/>

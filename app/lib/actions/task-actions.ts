@@ -9,7 +9,7 @@ import { dateToDbTimestamp } from '../utils';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-export async function fetchProjectTasksByIdGrouped(id: string) {
+export async function fetchProjectTasksGrouped(id: string, query: string) {
   try {
     const data = await sql<Task[]>`
       SELECT 
@@ -26,6 +26,10 @@ export async function fetchProjectTasksByIdGrouped(id: string) {
       FROM tasks
       LEFT JOIN members ON tasks.assignee_id = members.id
       WHERE tasks.project_id = ${id}
+        AND (
+          tasks.title ILIKE ${`%${query}%`} OR
+          tasks.description ILIKE ${`%${query}%`}
+        )
       ORDER BY tasks.position ASC
     `;
 
@@ -38,6 +42,13 @@ export async function fetchProjectTasksByIdGrouped(id: string) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch project tasks.');
   }
+}
+
+export async function fetchProjectTasksCount(id: string) {
+  const data = await sql`
+    SELECT COUNT(*) FROM tasks WHERE project_id = ${id}
+  `;
+  return Number(data[0].count);
 }
 
 export async function createTask(data: z.infer<typeof TaskSchema>) {

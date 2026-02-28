@@ -5,8 +5,6 @@ import { Task } from "../_lib/types";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
 import CreateTaskModal from "./create-task-modal";
-import Search from "@/app/ui/shared/search";
-import { CreateTask } from "./buttons";
 import { TaskStatus } from "../_lib/enums";
 import { MemberField } from "../../members/_lib/types";
 import TasksColumn from "./tasks-column";
@@ -47,10 +45,12 @@ const customCollisionStrategy = (args: any) => {
 
 export default function TasksBoard({
   projectId,
+  hasTasks,
   tasksByStatus: initialTasksByStatus,
   members,
 }: {
   projectId: string;
+  hasTasks: boolean;
   tasksByStatus: Record<'todo' | 'in-progress' | 'done', Task[]>;
   members: MemberField[];
 }) {
@@ -81,8 +81,6 @@ export default function TasksBoard({
   if (!isMounted) {
     return <div className="flex-auto flex gap-4 w-full h-[500px] bg-gray-50/50 animate-pulse" />;
   }
-
-  const hasTasks = Object.values(tasksByStatus || {}).some(arr => arr.length > 0);
 
   const handleEdit = (task: Task) => {
     setTaskToEdit(task);
@@ -198,62 +196,55 @@ export default function TasksBoard({
 
     setActiveId(null);
   }
+
+  if (!hasTasks) {
+    return <EmptyState
+      title="No tasks found"
+      description="Looks like you haven't added any task to this project yet."
+      icon={<ClipboardDocumentListIcon />}
+      ctaText="Create Task"
+      ctaAction={() => setIsCreateTaskOpen(true)}
+    />;
+  }
       
   return (
     <>
-      {!hasTasks ? (
-        <EmptyState
-          title="No tasks found"
-          description="Looks like you haven't added any task to this project yet."
-          icon={<ClipboardDocumentListIcon />}
-          ctaText="Create Task"
-          ctaAction={() => setIsCreateTaskOpen(true)}
-        />
-      ) : (
-        <>
-          <div className="mt-4 flex items-center justify-between gap-2 md:mt-6">
-            <Search placeholder="Search tasks..." />
-            <CreateTask onModalOpen={() => setIsCreateTaskOpen(true)} />
-          </div>
-
-          <div className="flex-auto flex gap-4 w-full overflow-x-auto overflow-y-hidden">
-            <DndContext id="tasks-board"
-              sensors={sensors}
-              collisionDetection={closestCorners}
-              modifiers={[restrictToWindowEdges]}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDragEnd={handleDragEnd}
-            >
-              {columns.map((col) => {
-                const columnTasks = tasksByStatus[col.status as keyof typeof tasksByStatus] || [];
-                return (
-                  <TasksColumn
-                    key={col.status}
-                    columnStatus={col.status}
-                    columnTitle={col.title}
-                    tasks={columnTasks}
-                    onEdit={handleEdit}
-                    onDeleteConfirm={confirmDelete}
-                  />
-                );
-              })}
-              <DragOverlay>
-                {activeTask ? (
-                  <div className="shadow-xl ring-1 ring-black/5 rounded-lg rotate-2 cursor-grabbing">
-                    <TaskCard 
-                      task={activeTask} 
-                      showActions={false}
-                      onEdit={() => {}} 
-                      onDeleteConfirm={() => {}} 
-                    />
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-          </div>
-        </>
-      )}
+      <div className="flex-auto flex gap-4 w-full overflow-x-auto overflow-y-hidden">
+        <DndContext id="tasks-board"
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          modifiers={[restrictToWindowEdges]}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          {columns.map((col) => {
+            const columnTasks = tasksByStatus[col.status as keyof typeof tasksByStatus] || [];
+            return (
+              <TasksColumn
+                key={col.status}
+                columnStatus={col.status}
+                columnTitle={col.title}
+                tasks={columnTasks}
+                onEdit={handleEdit}
+                onDeleteConfirm={confirmDelete}
+              />
+            );
+          })}
+          <DragOverlay>
+            {activeTask ? (
+              <div className="shadow-xl ring-1 ring-black/5 rounded-lg rotate-2 cursor-grabbing">
+                <TaskCard 
+                  task={activeTask} 
+                  showActions={false}
+                  onEdit={() => {}} 
+                  onDeleteConfirm={() => {}} 
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
 
       <CreateTaskModal
         projectId={projectId}

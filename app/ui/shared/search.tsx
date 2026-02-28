@@ -1,7 +1,8 @@
 'use client';
 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { useRef } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 export default function Search({ placeholder }: { placeholder: string }) {
@@ -9,6 +10,8 @@ export default function Search({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = useDebouncedCallback((query) => {
     const params = new URLSearchParams(searchParams);
@@ -27,6 +30,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
         Search
       </label>
       <input
+        ref={inputRef}
         className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
         placeholder={placeholder}
         onChange={(e) => {
@@ -35,6 +39,15 @@ export default function Search({ placeholder }: { placeholder: string }) {
         defaultValue={searchParams.get('query')?.toString()}
       />
       <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+      {searchParams.get('query') && (
+        <XMarkIcon
+          className="absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900 cursor-pointer"
+          onClick={() => {
+            handleSearch('');
+            if (inputRef.current) inputRef.current.value = '';
+          }}
+        />
+      )}
     </div>
   );
 }
