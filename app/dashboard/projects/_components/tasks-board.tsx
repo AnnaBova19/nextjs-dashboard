@@ -196,55 +196,55 @@ export default function TasksBoard({
 
     setActiveId(null);
   }
-
-  if (!hasTasks) {
-    return <EmptyState
-      title="No tasks found"
-      description="Looks like you haven't added any task to this project yet."
-      icon={<ClipboardDocumentListIcon />}
-      ctaText="Create Task"
-      ctaAction={() => setIsCreateTaskOpen(true)}
-    />;
-  }
       
   return (
     <>
-      <div className="flex-auto flex gap-4 w-full overflow-x-auto overflow-y-hidden">
-        <DndContext id="tasks-board"
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          modifiers={[restrictToWindowEdges]}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          {columns.map((col) => {
-            const columnTasks = tasksByStatus[col.status as keyof typeof tasksByStatus] || [];
-            return (
-              <TasksColumn
-                key={col.status}
-                columnStatus={col.status}
-                columnTitle={col.title}
-                tasks={columnTasks}
-                onEdit={handleEdit}
-                onDeleteConfirm={confirmDelete}
-              />
-            );
-          })}
-          <DragOverlay>
-            {activeTask ? (
-              <div className="shadow-xl ring-1 ring-black/5 rounded-lg rotate-2 cursor-grabbing">
-                <TaskCard 
-                  task={activeTask} 
-                  showActions={false}
-                  onEdit={() => {}} 
-                  onDeleteConfirm={() => {}} 
+      {!hasTasks ? (
+        <EmptyState
+          title="No tasks found"
+          description="Looks like you haven't added any task to this project yet."
+          icon={<ClipboardDocumentListIcon />}
+          ctaText="Create Task"
+          ctaAction={() => setIsCreateTaskOpen(true)}
+        />
+      ) : (
+        <div className="flex-auto flex gap-4 w-full overflow-x-auto overflow-y-hidden">
+          <DndContext id="tasks-board"
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            modifiers={[restrictToWindowEdges]}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            {columns.map((col) => {
+              const columnTasks = tasksByStatus[col.status as keyof typeof tasksByStatus] || [];
+              return (
+                <TasksColumn
+                  key={col.status}
+                  columnStatus={col.status}
+                  columnTitle={col.title}
+                  tasks={columnTasks}
+                  onEdit={handleEdit}
+                  onDeleteConfirm={confirmDelete}
                 />
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      </div>
+              );
+            })}
+            <DragOverlay>
+              {activeTask ? (
+                <div className="shadow-xl ring-1 ring-black/5 rounded-lg rotate-2 cursor-grabbing">
+                  <TaskCard 
+                    task={activeTask} 
+                    showActions={false}
+                    onEdit={() => {}} 
+                    onDeleteConfirm={() => {}} 
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </div>
+      )}
 
       <CreateTaskModal
         projectId={projectId}

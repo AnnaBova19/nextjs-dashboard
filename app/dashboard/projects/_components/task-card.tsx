@@ -42,8 +42,8 @@ export function TaskCard({
         )}
       </div>
 
-      <div className="text-sm text-gray-700 line-clamp-2">
-        {task.description}
+      <div className="text-sm text-gray-700 line-clamp-2 rich-text"
+        dangerouslySetInnerHTML={{ __html: task.description }} >
       </div>
 
       <div className="flex items-center gap-2 text-xs text-gray-500">

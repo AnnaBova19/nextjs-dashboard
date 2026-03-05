@@ -28,7 +28,7 @@ import {
 import { TaskPriority, TaskStatus } from "../_lib/enums";
 import { TASK_PRIORITY_MAP, TASK_STATUS_MAP, taskPriorityOptions, taskStatusOptions } from "../_lib/constants";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -39,7 +39,6 @@ import { format, startOfDay } from "date-fns";
 import { createTask } from "@/app/lib/actions/task-actions";
 import { toast } from "sonner";
 import clsx from 'clsx';
-import TextareaAutosize from "react-textarea-autosize";
 import { MemberField } from "../../members/_lib/types";
 import {
   Select,
@@ -49,6 +48,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from 'next/image';
+import { RichEditor } from "@/app/ui/shared/rich-text-editor";
 
 export default function CreateTaskModal({
   projectId,
@@ -61,6 +61,8 @@ export default function CreateTaskModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [resetKey, setResetKey] = useState(0);
+  
   const form = useForm({
     resolver: zodResolver(TaskSchema),
     defaultValues: {
@@ -73,6 +75,11 @@ export default function CreateTaskModal({
       assignee_id: "",
     },
   });
+
+  const handleReset = () => {
+    form.reset();
+    setResetKey(k => k + 1);
+  };
 
   async function onSubmit(data: z.infer<typeof TaskSchema>) {
     const result = await createTask(data);
@@ -101,236 +108,232 @@ export default function CreateTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="w-[90%] max-w-[900px]">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           Fill out the form below to create a new task.
         </DialogDescription>
-        <form id="create-task-form" onSubmit={form.handleSubmit(onSubmit)}>
-          <FieldGroup>
-            <Controller
-              name="status"
-              control={form.control}
-              render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-task-form-status">
-                  Status
-                </FieldLabel>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant={TASK_STATUS_MAP[field.value]?.variant || 'outline'} className="!w-fit justify-between">
-                      {TASK_STATUS_MAP[field.value]?.label || "Select Status"}
-                      <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-40" align="start">
-                    {taskStatusOptions.map((status) => (
-                      <DropdownMenuItem
-                        key={status.value}
-                        onSelect={() => field.onChange(status.value)}>
-                        {status.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-              )}
-            />
-
-            <Controller
-              name="title"
-              control={form.control}
-              render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-task-form-title">
-                  Title
-                </FieldLabel>
-                <Input
-                  {...field}
-                  id="create-task-form-title"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="Enter task title"
-                  autoComplete="off"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-              )}
-            />
-
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-task-form-description">
-                  Description
-                </FieldLabel>
-                <TextareaAutosize
-                  {...field}
-                  id="create-task-form-description"
-                  placeholder="Enter task description"
-                  minRows={5}
-                  maxRows={15}
-                  className={`
-                    w-full rounded-md border border-input bg-background px-3 py-2
-                    text-sm placeholder:text-muted-foreground focus:outline-none
-                    focus:ring-1 focus:ring-ring focus:ring-offset-0
-                    ${fieldState.invalid ? "border-destructive" : ""}
-                  `}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-              )}
-            />
-
-            <Controller
-              name="assignee_id"
-              control={form.control}
-              render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-task-form-assigneeId">
-                  Assignee
-                </FieldLabel>
-                <Select
-                  name={field.name}
-                  value={field.value ?? undefined}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger
-                    id="create-invoice-form-assigneeId"
-                    aria-invalid={fieldState.invalid}
-                    className="min-w-[120px]"
-                  >
-                    <SelectValue placeholder="Select assignee" />
-                  </SelectTrigger>
-                  <SelectContent position="item-aligned">
-                    {members.map((member) => (
-                      <SelectItem key={member.id} value={member.id}>
-                        <div className="flex items-center gap-3">
-                          <Image
-                            src={member.image_url}
-                            alt={`${member.first_name} ${member.last_name}'s profile picture`}
-                            width={28}
-                            height={28}
-                            className="rounded-full object-cover"
-                            style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
-                          />
-                          <p>{member.first_name} {member.last_name}</p>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-              )}
-            />
-
-            <Controller
-              name="priority"
-              control={form.control}
-              render={({ field, fieldState }) => {
-              const selectedPriority = TASK_PRIORITY_MAP[field.value as TaskPriority];
-              const SelectedPriorityIcon = selectedPriority?.icon;
-              return (
+        <div className="no-scrollbar -mx-4 max-h-[75vh] overflow-y-auto px-4">
+          <form id="create-task-form" onSubmit={form.handleSubmit(onSubmit)}>
+            <FieldGroup>
+              <Controller
+                name="status"
+                control={form.control}
+                render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="create-task-form-priority">
-                    Priority
+                  <FieldLabel required htmlFor="create-task-form-status">
+                    Status
                   </FieldLabel>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="!w-40 justify-between">
-                        <span className="flex items-center gap-2">
-                          {SelectedPriorityIcon && (
-                            <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
-                          )}
-                          {selectedPriority?.label || "Select Priority"}
-                        </span>
+                      <Button variant={TASK_STATUS_MAP[field.value]?.variant || 'outline'} className="!w-fit justify-between">
+                        {TASK_STATUS_MAP[field.value]?.label || "Select Status"}
                         <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-40" align="start">
-                      {taskPriorityOptions.map((priority) => {
-                        const PriorityIcon = priority.icon;
-                        return (
-                          <DropdownMenuItem
-                            key={priority.value}
-                            onSelect={() => field.onChange(priority.value)}>
-                            {PriorityIcon && <PriorityIcon className={`h-4 w-4 ${priority.color}`} />}
-                            <span>{priority.label}</span>
-                          </DropdownMenuItem>
-                        );
-                      })}
+                      {taskStatusOptions.map((status) => (
+                        <DropdownMenuItem
+                          key={status.value}
+                          onSelect={() => field.onChange(status.value)}>
+                          {status.label}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
-              );
-              }}
-            />
-
-            <Controller
-              name="due_date"
-              control={form.control}
-              render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-task-form-due-date">
-                  Due Date
-                </FieldLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={clsx(
-                        '!w-40 justify-between',
-                        fieldState.invalid && form.formState.isSubmitted && 'border-red-500'
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "MMM d, yyyy")
-                      ) : (
-                        <span className="text-gray-500">Pick a date</span>
-                      )}
-                      <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={{ before: startOfDay(new Date()) }}
-                      defaultMonth={field.value}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
                 )}
-              </Field>
-              )}
-            />
-          </FieldGroup>
-        </form>
+              />
+
+              <Controller
+                name="title"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel required htmlFor="create-task-form-title">
+                    Title
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="create-task-form-title"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter task title"
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+                )}
+              />
+
+              <Controller
+                name="description"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel required htmlFor="create-task-form-description">
+                    Description
+                  </FieldLabel>
+                  <RichEditor
+                    key={resetKey}
+                    value={field.value}
+                    placeholder="Enter task description"
+                    onChange={field.onChange}
+                    invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+                )}
+              />
+
+              <Controller
+                name="assignee_id"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="create-task-form-assigneeId">
+                    Assignee
+                  </FieldLabel>
+                  <Select
+                    name={field.name}
+                    value={field.value ?? undefined}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger
+                      id="create-invoice-form-assigneeId"
+                      aria-invalid={fieldState.invalid}
+                      className="min-w-[120px]"
+                    >
+                      <SelectValue placeholder="Select assignee" />
+                    </SelectTrigger>
+                    <SelectContent position="item-aligned">
+                      {members.map((member) => (
+                        <SelectItem key={member.id} value={member.id}>
+                          <div className="flex items-center gap-3">
+                            <Image
+                              src={member.image_url}
+                              alt={`${member.first_name} ${member.last_name}'s profile picture`}
+                              width={28}
+                              height={28}
+                              className="rounded-full object-cover"
+                              style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
+                            />
+                            <p>{member.first_name} {member.last_name}</p>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+                )}
+              />
+
+              <Controller
+                name="priority"
+                control={form.control}
+                render={({ field, fieldState }) => {
+                const selectedPriority = TASK_PRIORITY_MAP[field.value as TaskPriority];
+                const SelectedPriorityIcon = selectedPriority?.icon;
+                return (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel required htmlFor="create-task-form-priority">
+                      Priority
+                    </FieldLabel>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="!w-40 justify-between">
+                          <span className="flex items-center gap-2">
+                            {SelectedPriorityIcon && (
+                              <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
+                            )}
+                            {selectedPriority?.label || "Select Priority"}
+                          </span>
+                          <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-40" align="start">
+                        {taskPriorityOptions.map((priority) => {
+                          const PriorityIcon = priority.icon;
+                          return (
+                            <DropdownMenuItem
+                              key={priority.value}
+                              onSelect={() => field.onChange(priority.value)}>
+                              {PriorityIcon && <PriorityIcon className={`h-4 w-4 ${priority.color}`} />}
+                              <span>{priority.label}</span>
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                );
+                }}
+              />
+
+              <Controller
+                name="due_date"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel required htmlFor="create-task-form-due-date">
+                    Due Date
+                  </FieldLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={clsx(
+                          '!w-40 justify-between',
+                          fieldState.invalid && form.formState.isSubmitted && 'border-red-500'
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "MMM d, yyyy")
+                        ) : (
+                          <span className="text-gray-500">Pick a date</span>
+                        )}
+                        <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={{ before: startOfDay(new Date()) }}
+                        defaultMonth={field.value}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+                )}
+              />
+            </FieldGroup>
+          </form>
+        </div>
         <DialogFooter className="mt-6">
           <Field orientation="horizontal" className="justify-end">
             <DialogClose asChild>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             </DialogClose>
-            <Button type="button" variant="outline" onClick={() => form.reset()}>
+            <Button type="button" variant="outline" onClick={handleReset}>
               Reset
             </Button>
             <Button type="submit" form="create-task-form" disabled={form.formState.isSubmitting}>
