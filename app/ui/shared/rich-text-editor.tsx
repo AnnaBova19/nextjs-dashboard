@@ -1,10 +1,10 @@
-// components/rich-editor.tsx
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { EditorToolbar } from "./tip-tap-toolbar";
 import Placeholder from "@tiptap/extension-placeholder";
+import Heading from "@tiptap/extension-heading";
 
 export function RichEditor({
   value = '',
@@ -19,7 +19,12 @@ export function RichEditor({
 }) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: false,
+      }),
+      Heading.configure({
+        levels: [1, 2, 3, 4, 5, 6],
+      }),
       Placeholder.configure({
         placeholder,
       }),
