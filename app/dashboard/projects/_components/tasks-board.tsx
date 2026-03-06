@@ -57,6 +57,7 @@ export default function TasksBoard({
   const [isMounted, setIsMounted] = useState(false);
   const [tasksByStatus, setTasksByStatus] = useState<Record<string, Task[]>>(initialTasksByStatus);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null); 
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -84,6 +85,18 @@ export default function TasksBoard({
 
   const handleEdit = (task: Task) => {
     setTaskToEdit(task);
+    setIsEditTaskOpen(true);
+  };
+
+  const handleTaskFieldUpdate = (updatedTask: Task) => {
+    setTaskToEdit(updatedTask);
+    setTasksByStatus((prev) => {
+      const status = updatedTask.status;
+      return {
+        ...prev,
+        [status]: prev[status].map((t) => t.id === updatedTask.id ? updatedTask : t),
+      };
+    });
   };
 
   const confirmDelete = (task: Task) => {
@@ -258,8 +271,12 @@ export default function TasksBoard({
           projectId={projectId}
           task={taskToEdit}
           members={members}
-          open={!!taskToEdit}
-          onOpenChange={() => setTaskToEdit(null)}
+          open={isEditTaskOpen}
+          onTaskUpdate={handleTaskFieldUpdate}
+          onOpenChange={(val) => {
+            setIsEditTaskOpen(val);
+            if (!val) setTaskToEdit(null);
+          }}
         />
       )}
 

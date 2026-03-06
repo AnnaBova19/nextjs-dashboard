@@ -89,18 +89,35 @@ export async function createTask(data: z.infer<typeof TaskSchema>) {
   return { success: true, message: 'Task created successfully!' };
 }
 
-export async function updateTask(data: z.infer<typeof TaskSchema>) {
-  const validated = TaskSchema.safeParse(data);
+export async function updateTaskField<K extends keyof z.infer<typeof TaskSchema>>(
+  task_id: string,
+  field: K,
+  value: z.infer<typeof TaskSchema>[K],
+) {
+  const partialSchema = TaskSchema.pick({ [field]: true } as Partial<Record<keyof z.infer<typeof TaskSchema>, true>>);
+  const validated = partialSchema.safeParse({ [field]: value });
+
   if (!validated.success) {
     return {
       success: false,
       errors: validated.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Task.',
+      message: `Invalid value for ${field}.`,
     };
   }
 
-  // TODO
-  // revalidatePath(`/dashboard/projects/${project_id}`);
+  const updates: Record<string, any> = { [field]: value };
+
+  try {
+    await sql`
+      UPDATE tasks
+      SET ${sql(updates)}, updated_at = NOW()
+      WHERE id = ${task_id}
+    `;
+  } catch (error) {
+    console.error('Database Error:', error);
+    return { success: false, message: 'Database Error: Failed to Update Task.' };
+  }
+  
   return { success: true, message: 'Task updated successfully!' };
 }
 
