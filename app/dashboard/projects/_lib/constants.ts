@@ -21,6 +21,6 @@ export const TASK_PRIORITY_MAP = {
 } as const;
 
 export const taskPriorityOptions = Object.entries(TASK_PRIORITY_MAP).map(([value, config]) => ({
-  value: value as TaskStatus,
+  value: value as TaskPriority,
   ...config,
 }));

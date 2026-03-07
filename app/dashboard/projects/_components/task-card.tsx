@@ -31,7 +31,7 @@ export function TaskCard({
   return (
     <div className="flex flex-col gap-4 bg-white rounded-md border border-gray-200 p-4 cursor-pointer hover:shadow-lg">
       <div className="flex justify-between items-center">
-        <div className="text-sm font-semibold">
+        <div className="font-semibold">
           {task.title}
         </div>
         {showActions && (
@@ -56,7 +56,7 @@ export function TaskCard({
           {SelectedPriorityIcon && (
             <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
           )}
-          <span className="text-sm">{selectedPriority.label}</span>
+          <span className="text-xs">{selectedPriority.label}</span>
         </div>
         {task.assignee_id && task.assignee ? (
           <TooltipProvider>

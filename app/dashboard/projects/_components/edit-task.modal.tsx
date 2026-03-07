@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { MemberField } from "../../members/_lib/types";
 import { Task } from "../_lib/types";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { updateTaskField } from "@/app/lib/actions/task-actions";
 import { Input } from "@/components/ui/input";
 import { FieldError } from "@/components/ui/field";
-import { CheckIcon, ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { RichEditor } from "@/app/ui/shared/rich-text-editor";
 import {
   DropdownMenu,
@@ -25,7 +25,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TASK_STATUS_MAP, taskStatusOptions } from "../_lib/constants";
+import { TASK_PRIORITY_MAP, TASK_STATUS_MAP, taskPriorityOptions, taskStatusOptions } from "../_lib/constants";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 function InlineActions ({
   isPending,
@@ -177,18 +182,22 @@ function InlineDescription({
 
   if (!isEditing) {
     return (
-      <div
-        className="cursor-pointer hover:bg-muted rounded px-2 py-2 min-h-[60px] rich-text"
-        dangerouslySetInnerHTML={{ 
-          __html: task.description || "<p class='text-muted-foreground text-sm'>Add a description...</p>" 
-        }}
-        onClick={() => onEditingChange(true)}>
+      <div className="flex flex-col gap-1">
+        <div className="text-sm font-medium">Description</div>
+        <div
+          className="cursor-pointer hover:bg-muted rounded px-2 py-2 min-h-[60px] rich-text"
+          dangerouslySetInnerHTML={{ 
+            __html: task.description || "<p class='text-muted-foreground text-sm'>Add a description...</p>" 
+          }}
+          onClick={() => onEditingChange(true)}>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-1">
+      <div className="text-sm font-medium">Description</div>
       <Controller
         name="description"
         control={form.control}
@@ -243,7 +252,7 @@ function InlineStatus ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button  tabIndex={-1}
+        <Button tabIndex={-1}
           variant={TASK_STATUS_MAP[status]?.variant || 'outline'}
           className="!w-fit justify-between">
           {TASK_STATUS_MAP[status]?.label || "Select Status"}
@@ -259,6 +268,67 @@ function InlineStatus ({
             {status.label}
           </DropdownMenuItem>
         ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function InlinePriority({
+  task,
+  onTaskUpdate,
+}: {
+  task: Task;
+  onTaskUpdate: (task: Task) => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [priority, setPriority] = useState<TaskPriority>(task.priority);
+
+  const selectedPriority = TASK_PRIORITY_MAP[priority as TaskPriority];
+  const SelectedPriorityIcon = selectedPriority?.icon;
+
+  const handleSave = async (value: TaskPriority) => {
+    if (value === task.priority) return;
+    setPriority(value);
+
+    startTransition(async () => {
+      const result = await updateTaskField(task.id, "priority", value);
+      if (result.success) {
+        onTaskUpdate({ ...task, priority: value });
+      } else {
+        toast.error(result.message);
+        setPriority(task.priority);
+      }
+    });
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button tabIndex={-1}
+          variant="ghost"
+          className="!w-fit justify-between border border-transparent hover:border-input data-[state=open]:border-input group">
+          <span className="flex items-center gap-2">
+            {SelectedPriorityIcon && (
+              <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
+            )}
+            {selectedPriority?.label || "Select Priority"}
+          </span>
+          <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50 invisible group-hover:visible data-[state=open]:visible" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-40" align="start"
+        onCloseAutoFocus={(e) => e.preventDefault()}>
+        {taskPriorityOptions.map((priority) => {
+          const PriorityIcon = priority.icon;
+          return (
+            <DropdownMenuItem
+              key={priority.value}
+              onSelect={() => handleSave(priority.value as TaskPriority)}>
+              {PriorityIcon && <PriorityIcon className={`h-4 w-4 ${priority.color}`} />}
+              <span>{priority.label}</span>
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -283,7 +353,7 @@ export default function EditProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90%] max-w-[1100px]">
+      <DialogContent className="flex flex-col justify-start w-[90%] max-w-[1100px] h-[90vh]">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
@@ -291,14 +361,32 @@ export default function EditProjectModal({
           You can update your task’s details here.
         </DialogDescription>
         <div className="no-scrollbar -mx-4 max-h-[75vh] overflow-y-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:order-last flex flex-col gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:order-last flex flex-col gap-6">
               <InlineStatus
                 task={task}
                 onTaskUpdate={onTaskUpdate}
               />
+              <Collapsible defaultOpen className="rounded-md border">
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="lg"
+                    className="flex justify-start group w-full px-4 text-md">
+                    <ChevronRightIcon className="group-data-[state=open]:rotate-90" />
+                    Details
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="flex flex-col gap-5 data-[state=open]:px-3 data-[state=open]:py-2.5 pt-0 text-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="text-sm font-medium">Priority</div>
+                    <InlinePriority
+                      task={task}
+                      onTaskUpdate={onTaskUpdate}
+                    />  
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
-            <div className="col-span-2 flex flex-col gap-3">
+            <div className="col-span-2 flex flex-col gap-6">
               <InlineTitle
                 task={task}
                 onTaskUpdate={onTaskUpdate}
