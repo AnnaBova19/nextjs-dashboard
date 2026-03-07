@@ -91,10 +91,23 @@ export default function TasksBoard({
   const handleTaskFieldUpdate = (updatedTask: Task) => {
     setTaskToEdit(updatedTask);
     setTasksByStatus((prev) => {
-      const status = updatedTask.status;
+      const oldStatus = Object.keys(prev).find((status) =>
+        prev[status].some((t) => t.id === updatedTask.id)
+      );
+      if (!oldStatus) return prev;
+
+      const newStatus = updatedTask.status;
+      if (oldStatus === newStatus) {
+        return {
+          ...prev,
+          [oldStatus]: prev[oldStatus].map((t) => t.id === updatedTask.id ? updatedTask : t),
+        };
+      }
+
       return {
         ...prev,
-        [status]: prev[status].map((t) => t.id === updatedTask.id ? updatedTask : t),
+        [oldStatus]: prev[oldStatus].filter((t) => t.id !== updatedTask.id),
+        [newStatus]: [...prev[newStatus], updatedTask],
       };
     });
   };

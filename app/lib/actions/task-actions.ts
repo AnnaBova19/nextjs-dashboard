@@ -106,6 +106,15 @@ export async function updateTaskField<K extends keyof z.infer<typeof TaskSchema>
   }
 
   const updates: Record<string, any> = { [field]: value };
+  if (field === "status") {
+    const result = await sql`
+      SELECT COALESCE(MAX(position), -1) + 1 AS next_position
+      FROM tasks
+      WHERE status = ${value as string}
+      AND id != ${task_id}
+    `;
+    updates.position = result[0].next_position;
+  }
 
   try {
     await sql`

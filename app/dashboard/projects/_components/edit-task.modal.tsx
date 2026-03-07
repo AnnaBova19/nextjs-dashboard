@@ -17,8 +17,15 @@ import { toast } from "sonner";
 import { updateTaskField } from "@/app/lib/actions/task-actions";
 import { Input } from "@/components/ui/input";
 import { FieldError } from "@/components/ui/field";
-import { CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { RichEditor } from "@/app/ui/shared/rich-text-editor";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TASK_STATUS_MAP, taskStatusOptions } from "../_lib/constants";
 
 function InlineActions ({
   isPending,
@@ -208,6 +215,55 @@ function InlineDescription({
   );
 }
 
+function InlineStatus ({
+  task,
+  onTaskUpdate,
+}: {
+  task: Task;
+  onTaskUpdate: (task: Task) => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<TaskStatus>(task.status);
+
+  const handleSave = async (value: TaskStatus) => {
+    if (value === task.status) return;
+    setStatus(value);
+
+    startTransition(async () => {
+      const result = await updateTaskField(task.id, "status", value);
+      if (result.success) {
+        onTaskUpdate({ ...task, status: value });
+      } else {
+        toast.error(result.message);
+        setStatus(task.status);
+      }
+    });
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button  tabIndex={-1}
+          variant={TASK_STATUS_MAP[status]?.variant || 'outline'}
+          className="!w-fit justify-between">
+          {TASK_STATUS_MAP[status]?.label || "Select Status"}
+          <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-40" align="start"
+        onCloseAutoFocus={(e) => e.preventDefault()}>
+        {taskStatusOptions.map((status) => (
+          <DropdownMenuItem
+            key={status.value}
+            onSelect={() => handleSave(status.value as TaskStatus)}>
+            {status.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export default function EditProjectModal({
   projectId,
   task,
@@ -227,26 +283,36 @@ export default function EditProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90%] max-w-[900px]">
+      <DialogContent className="w-[90%] max-w-[1100px]">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           You can update your task’s details here.
         </DialogDescription>
-        <div className="flex flex-col gap-3 no-scrollbar -mx-4 max-h-[75vh] overflow-y-auto px-4">
-          <InlineTitle
-            task={task}
-            onTaskUpdate={onTaskUpdate}
-            isEditing={editingField === "title"}
-            onEditingChange={(val) => setEditingField(val ? "title" : null)}
-          />
-          <InlineDescription
-            task={task}
-            onTaskUpdate={onTaskUpdate}
-            isEditing={editingField === "description"}
-            onEditingChange={(val) => setEditingField(val ? "description" : null)}
-          />
+        <div className="no-scrollbar -mx-4 max-h-[75vh] overflow-y-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:order-last flex flex-col gap-3">
+              <InlineStatus
+                task={task}
+                onTaskUpdate={onTaskUpdate}
+              />
+            </div>
+            <div className="col-span-2 flex flex-col gap-3">
+              <InlineTitle
+                task={task}
+                onTaskUpdate={onTaskUpdate}
+                isEditing={editingField === "title"}
+                onEditingChange={(val) => setEditingField(val ? "title" : null)}
+              />
+              <InlineDescription
+                task={task}
+                onTaskUpdate={onTaskUpdate}
+                isEditing={editingField === "description"}
+                onEditingChange={(val) => setEditingField(val ? "description" : null)}
+              />
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
