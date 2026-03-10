@@ -369,7 +369,8 @@ export default function EditProjectModal({
               />
               <Collapsible defaultOpen className="rounded-md border">
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="lg"
+                  <Button tabIndex={-1}
+                    variant="ghost" size="lg"
                     className="flex justify-start group w-full px-4 text-md">
                     <ChevronRightIcon className="group-data-[state=open]:rotate-90" />
                     Details

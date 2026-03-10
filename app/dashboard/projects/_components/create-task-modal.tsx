@@ -40,15 +40,8 @@ import { createTask } from "@/app/lib/actions/task-actions";
 import { toast } from "sonner";
 import clsx from 'clsx';
 import { MemberField } from "../../members/_lib/types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import Image from 'next/image';
 import { RichEditor } from "@/app/ui/shared/rich-text-editor";
+import AssigneeAutocomplete from "./assignee-autocomplete";
 
 export default function CreateTaskModal({
   projectId,
@@ -151,6 +144,19 @@ export default function CreateTaskModal({
               />
 
               <Controller
+                name="assignee_id"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                <AssigneeAutocomplete
+                  field={field}
+                  fieldState={fieldState}
+                  members={members}
+                  isSubmitted={form.formState.isSubmitted}
+                />
+                )}
+              />
+
+              <Controller
                 name="title"
                 control={form.control}
                 render={({ field, fieldState }) => (
@@ -187,51 +193,6 @@ export default function CreateTaskModal({
                     onChange={field.onChange}
                     invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-                )}
-              />
-
-              <Controller
-                name="assignee_id"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="create-task-form-assigneeId">
-                    Assignee
-                  </FieldLabel>
-                  <Select
-                    name={field.name}
-                    value={field.value ?? undefined}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger
-                      id="create-invoice-form-assigneeId"
-                      aria-invalid={fieldState.invalid}
-                      className="min-w-[120px]"
-                    >
-                      <SelectValue placeholder="Select assignee" />
-                    </SelectTrigger>
-                    <SelectContent position="item-aligned">
-                      {members.map((member) => (
-                        <SelectItem key={member.id} value={member.id}>
-                          <div className="flex items-center gap-3">
-                            <Image
-                              src={member.image_url}
-                              alt={`${member.first_name} ${member.last_name}'s profile picture`}
-                              width={28}
-                              height={28}
-                              className="rounded-full object-cover"
-                              style={{ width: '28px', height: '28px', 'minWidth': '28px' }}
-                            />
-                            <p>{member.first_name} {member.last_name}</p>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
