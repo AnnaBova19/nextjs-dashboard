@@ -32,7 +32,7 @@ export function RichEditor({
     content: value,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
+      onChange?.(editor.getHTML().replace(/<p><\/p>/g, "<p>&nbsp;</p>"));
     },
   });
 

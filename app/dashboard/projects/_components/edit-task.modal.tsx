@@ -121,6 +121,7 @@ function InlineTitle({
               aria-invalid={fieldState.invalid}
               placeholder="Enter task title"
               disabled={isPending}
+              className="!text-lg font-semibold"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSave();
                 if (e.key === "Escape") handleCancel();
@@ -186,7 +187,7 @@ function InlineDescription({
       <div className="flex flex-col gap-1">
         <div className="text-sm font-medium">Description</div>
         <div
-          className="cursor-pointer hover:bg-muted rounded px-2 py-2 min-h-[60px] rich-text"
+          className="cursor-pointer hover:bg-muted rounded px-2 py-2 min-h-[60px] rich-text text-sm"
           dangerouslySetInnerHTML={{ 
             __html: task.description || "<p class='text-muted-foreground text-sm'>Add a description...</p>" 
           }}
