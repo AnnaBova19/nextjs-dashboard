@@ -67,9 +67,9 @@ export default function CreateMemberForm() {
               label="Upload Image"
               required
               value={field.value}
+              error={fieldState.error?.message}
               onChange={field.onChange}
               onRemove={() => {}}
-              error={fieldState.error?.message}
             />
             )}
           />

@@ -31,6 +31,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import AssigneeAutocomplete from "./assignee-autocomplete";
 
 function InlineActions ({
   isPending,
@@ -273,6 +274,44 @@ function InlineStatus ({
   );
 }
 
+function InlineAssignee({
+  task,
+  members,
+  onTaskUpdate,
+}: {
+  task: Task;
+  members: MemberField[];
+  onTaskUpdate: (task: Task) => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [assigneeId, setAssigneeId] = useState<string | null>(task.assignee_id ?? null);
+
+  const handleSave = async (value: string | null) => {
+    if (value === task.assignee_id) return;
+    setAssigneeId(value);
+
+    const newAssignee = members.find((m) => m.id === value) ?? null;
+
+    startTransition(async () => {
+      const result = await updateTaskField(task.id, "assignee_id", value);
+      if (result.success) {
+        onTaskUpdate({ ...task, assignee_id: value, assignee: newAssignee ?? undefined  });
+      } else {
+        toast.error(result.message);
+        setAssigneeId(task.assignee_id ?? null);
+      }
+    });
+  };
+
+  return (
+    <AssigneeAutocomplete
+      value={assigneeId ?? null}
+      members={members}
+      onChange={(value) => handleSave(value)}
+    />
+  );
+}
+
 function InlinePriority({
   task,
   onTaskUpdate,
@@ -306,7 +345,7 @@ function InlinePriority({
       <DropdownMenuTrigger asChild>
         <Button tabIndex={-1}
           variant="ghost"
-          className="!w-fit justify-between border border-transparent hover:border-input data-[state=open]:border-input group">
+          className="!w-full justify-between border border-transparent hover:border-input data-[state=open]:border-input group">
           <span className="flex items-center gap-2">
             {SelectedPriorityIcon && (
               <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
@@ -316,7 +355,8 @@ function InlinePriority({
           <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50 invisible group-hover:visible data-[state=open]:visible" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-40" align="start"
+      <DropdownMenuContent align="start"
+        style={{ width: 'var(--radix-dropdown-menu-trigger-width)' }}
         onCloseAutoFocus={(e) => e.preventDefault()}>
         {taskPriorityOptions.map((priority) => {
           const PriorityIcon = priority.icon;
@@ -378,7 +418,15 @@ export default function EditProjectModal({
                 </CollapsibleTrigger>
                 <CollapsibleContent className="flex flex-col gap-5 data-[state=open]:px-3 data-[state=open]:py-2.5 pt-0 text-sm">
                   <div className="flex items-center gap-4">
-                    <div className="text-sm font-medium">Priority</div>
+                    <div className="min-w-[70px] text-sm font-medium">Assignee</div>
+                    <InlineAssignee
+                      task={task}
+                      members={members}
+                      onTaskUpdate={onTaskUpdate}
+                    />  
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="min-w-[70px] text-sm font-medium">Priority</div>
                     <InlinePriority
                       task={task}
                       onTaskUpdate={onTaskUpdate}

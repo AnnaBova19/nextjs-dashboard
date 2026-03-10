@@ -5,7 +5,6 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import { ControllerFieldState, ControllerRenderProps } from "react-hook-form";
 import { MemberField } from "../../members/_lib/types";
 import {
   Popover,
@@ -15,7 +14,6 @@ import {
 import {
   Field,
   FieldError,
-  FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -25,29 +23,32 @@ import { UserIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from 'next/image';
 
 export default function AssigneeAutocomplete({
-  field,
-  fieldState,
+  label,
+  value,
   members,
-  isSubmitted,
+  error,
+  onChange,
 }: {
-  field: ControllerRenderProps<any, 'assignee_id'>;
-  fieldState: ControllerFieldState;
+  label?: string;
+  value: string | null | undefined;
   members: MemberField[];
-  isSubmitted: boolean;
+  error?: string;
+  onChange: (value: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const selectedMember = members.find((m) => m.id === field.value);
+  const selectedMember = members.find((m) => m.id === (value ?? null));
 
   return (
-    <Field data-invalid={fieldState.invalid}>
-      <FieldLabel htmlFor="create-task-form-assigneeId">Assignee</FieldLabel>
+    <Field data-invalid={!!error}>
+      {label && <FieldLabel htmlFor="assignee-autocomplete">Assignee</FieldLabel>}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
+          <Button tabIndex={-1}
+            variant={!!label ? 'outline' : 'ghost'}
             className={clsx(
               'justify-between px-3',
-              fieldState.invalid && isSubmitted && 'border-red-500'
+              error && 'border-red-500',
+              !label && ' border border-transparent hover:border-input data-[state=open]:border-input group'
             )}
           >
             {selectedMember ? (
@@ -76,9 +77,12 @@ export default function AssigneeAutocomplete({
                 onPointerDown={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  field.onChange(null);
+                  onChange(null);
                 }}
-                className="ml-2 h-4 w-4 opacity-50 hover:opacity-100"
+                className={clsx(
+                  'ml-2 h-4 w-4 opacity-50 hover:opacity-100',
+                  !label && 'invisible group-hover:visible data-[state=open]:visible'
+                )}
               >
                 <XMarkIcon className="h-4 w-4" />
               </span>
@@ -115,7 +119,7 @@ export default function AssigneeAutocomplete({
                   key={member.id}
                   value={`${member.first_name} ${member.last_name}`}
                   onSelect={() => {
-                    field.onChange(member.id);
+                    onChange(member.id);
                     setOpen(false);
                   }}
                 >
@@ -136,7 +140,7 @@ export default function AssigneeAutocomplete({
           </Command>
         </PopoverContent>
       </Popover>
-      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+      {error && <FieldError errors={[{ message: error }]} />}
     </Field>
   )
 }

@@ -14,18 +14,18 @@ export default function ImageUploader({
   label,
   required,
   imageUrl,
-  onRemove,
-  onChange,
   value,
   error,
+  onChange,
+  onRemove,
 }: {
   label: string;
   required?: boolean;
   imageUrl?: string | null;
-  onRemove: () => void;
-  onChange: (file: File | null) => void;
   value: any;
   error?: string;
+  onChange: (file: File | null) => void;
+  onRemove: () => void;
 }) {
   const [preview, setPreview] = useState<string | null>(imageUrl || null);
 

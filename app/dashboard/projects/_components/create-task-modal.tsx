@@ -148,10 +148,11 @@ export default function CreateTaskModal({
                 control={form.control}
                 render={({ field, fieldState }) => (
                 <AssigneeAutocomplete
-                  field={field}
-                  fieldState={fieldState}
+                  label="Assignee"
+                  value={field.value ?? null}
                   members={members}
-                  isSubmitted={form.formState.isSubmitted}
+                  error={fieldState.error?.message}
+                  onChange={field.onChange}
                 />
                 )}
               />

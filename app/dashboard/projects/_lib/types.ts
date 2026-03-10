@@ -22,7 +22,7 @@ export type Task = {
   due_date: number;
   created_at: number;
   archived_at?: number;
-  assignee_id?: string;
+  assignee_id?: string | null;
   assignee?: MemberField;
   position: number;
 };
