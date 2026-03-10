@@ -201,92 +201,94 @@ export default function CreateTaskModal({
                 )}
               />
 
-              <Controller
-                name="priority"
-                control={form.control}
-                render={({ field, fieldState }) => {
-                const selectedPriority = TASK_PRIORITY_MAP[field.value as TaskPriority];
-                const SelectedPriorityIcon = selectedPriority?.icon;
-                return (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+                <Controller
+                  name="priority"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                  const selectedPriority = TASK_PRIORITY_MAP[field.value as TaskPriority];
+                  const SelectedPriorityIcon = selectedPriority?.icon;
+                  return (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel required htmlFor="create-task-form-priority">
+                        Priority
+                      </FieldLabel>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="!w-40 justify-between">
+                            <span className="flex items-center gap-2">
+                              {SelectedPriorityIcon && (
+                                <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
+                              )}
+                              {selectedPriority?.label || "Select Priority"}
+                            </span>
+                            <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-40" align="start">
+                          {taskPriorityOptions.map((priority) => {
+                            const PriorityIcon = priority.icon;
+                            return (
+                              <DropdownMenuItem
+                                key={priority.value}
+                                onSelect={() => field.onChange(priority.value)}>
+                                {PriorityIcon && <PriorityIcon className={`h-4 w-4 ${priority.color}`} />}
+                                <span>{priority.label}</span>
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  );
+                  }}
+                />
+
+                <Controller
+                  name="due_date"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel required htmlFor="create-task-form-priority">
-                      Priority
+                    <FieldLabel required htmlFor="create-task-form-due-date">
+                      Due Date
                     </FieldLabel>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="!w-40 justify-between">
-                          <span className="flex items-center gap-2">
-                            {SelectedPriorityIcon && (
-                              <SelectedPriorityIcon className={`h-4 w-4 ${selectedPriority.color}`} />
-                            )}
-                            {selectedPriority?.label || "Select Priority"}
-                          </span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={clsx(
+                            '!w-40 justify-between',
+                            fieldState.invalid && form.formState.isSubmitted && 'border-red-500'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "MMM d, yyyy")
+                          ) : (
+                            <span className="text-gray-500">Pick a date</span>
+                          )}
                           <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-40" align="start">
-                        {taskPriorityOptions.map((priority) => {
-                          const PriorityIcon = priority.icon;
-                          return (
-                            <DropdownMenuItem
-                              key={priority.value}
-                              onSelect={() => field.onChange(priority.value)}>
-                              {PriorityIcon && <PriorityIcon className={`h-4 w-4 ${priority.color}`} />}
-                              <span>{priority.label}</span>
-                            </DropdownMenuItem>
-                          );
-                        })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={{ before: startOfDay(new Date()) }}
+                          defaultMonth={field.value}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
-                );
-                }}
-              />
-
-              <Controller
-                name="due_date"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel required htmlFor="create-task-form-due-date">
-                    Due Date
-                  </FieldLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={clsx(
-                          '!w-40 justify-between',
-                          fieldState.invalid && form.formState.isSubmitted && 'border-red-500'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "MMM d, yyyy")
-                        ) : (
-                          <span className="text-gray-500">Pick a date</span>
-                        )}
-                        <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={{ before: startOfDay(new Date()) }}
-                        defaultMonth={field.value}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
                   )}
-                </Field>
-                )}
-              />
+                />
+              </div>
             </FieldGroup>
           </form>
         </div>
